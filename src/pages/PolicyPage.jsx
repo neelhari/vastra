@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, Truck, RefreshCw, FileText, ChevronRight } from 'lucide-react';
+import { ShieldCheck, Truck, RefreshCw, FileText, ChevronRight, ArrowLeft } from 'lucide-react';
 import { BRAND } from '../config/brand';
 
 export default function PolicyPage() {
@@ -17,12 +17,17 @@ export default function PolicyPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-xs text-gray-500" aria-label="Breadcrumb">
-        <Link to="/" className="hover:text-[#6B1518] transition-colors">Home</Link>
-        <ChevronRight className="w-3 h-3 text-gray-300" />
-        <span className="text-[#6B1518] font-semibold">Customer Policy & Legal</span>
-      </nav>
+      {/* Clean Top Navigation */}
+      <div className="pb-2">
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-[#6B1518] py-1 px-2.5 rounded-lg hover:bg-gray-100 transition-colors -ml-2.5 cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4 text-gray-500" />
+          <span>Back to Home</span>
+        </button>
+      </div>
 
       {/* Header Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-gray-100 hide-scroll">

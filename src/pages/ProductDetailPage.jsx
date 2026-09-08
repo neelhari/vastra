@@ -16,7 +16,8 @@ import {
   Award,
   Play,
   Film,
-  ExternalLink
+  ExternalLink,
+  ArrowLeft
 } from 'lucide-react';
 import { useStoreData } from '../context/StoreDataContext';
 import ProductCard from '../components/ProductCard';
@@ -137,22 +138,22 @@ export default function ProductDetailPage() {
 
   return (
     <div className="pb-28 xl:pb-12">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-xs text-gray-500 flex-wrap px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-3 pb-2" aria-label="Breadcrumb">
-        <Link to="/" className="hover:text-[#6B1518] transition-colors">Home</Link>
-        <ChevronRight className="w-3 h-3 text-gray-300" />
-        <Link to="/shop" className="hover:text-[#6B1518] transition-colors">Shop</Link>
+      {/* Top Back Navigation (Replacing clunky breadcrumbs) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-2 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-[#6B1518] py-1 px-2.5 rounded-lg hover:bg-gray-100 transition-colors -ml-2.5 cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4 text-gray-500" />
+          <span>Back</span>
+        </button>
         {categoryMeta && (
-          <>
-            <ChevronRight className="w-3 h-3 text-gray-300" />
-            <Link to={`/shop?category=${categoryMeta.id}`} className="hover:text-[#6B1518] transition-colors">
-              {categoryMeta.name}
-            </Link>
-          </>
+          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+            {categoryMeta.name}
+          </span>
         )}
-        <ChevronRight className="w-3 h-3 text-gray-300" />
-        <span className="text-[#6B1518] font-semibold line-clamp-1">{product.name}</span>
-      </nav>
+      </div>
 
       <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-8 lg:gap-12">

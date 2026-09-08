@@ -61,30 +61,20 @@ export default function CartPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-gray-500" aria-label="Breadcrumb">
-        <Link to="/" className="hover:text-[#6B1518] transition-colors">Home</Link>
-        <span>/</span>
-        <span className="text-[#6B1518] font-semibold">Shopping Cart</span>
-      </nav>
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-6">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#D3923A]">Order Review</span>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-gray-900 mt-1">Your Shopping Cart</h1>
-          <p className="text-gray-600 text-xs sm:text-sm mt-1">
-            {cartItems.length === 0 ? 'Your cart is currently empty' : `Reviewing ${cartItems.length} unique item${cartItems.length > 1 ? 's' : ''} in your cart`}
-          </p>
-        </div>
-
+      {/* Clean Top Navigation Bar with Back Button (Replacing clunky breadcrumb & duplicate continue shopping) */}
+      <div className="flex items-center justify-between pb-3 border-b border-gray-100">
         <button
+          type="button"
           onClick={() => navigate('/shop')}
-          className="inline-flex items-center gap-2 text-xs font-bold text-[#6B1518] hover:underline"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-[#6B1518] py-1.5 px-3 rounded-xl hover:bg-gray-100 transition-colors -ml-3 cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 text-gray-500" />
           <span>Continue Shopping</span>
         </button>
+
+        <div className="text-xs font-bold text-gray-900">
+          Shopping Bag ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})
+        </div>
       </div>
 
       {cartItems.length === 0 ? (

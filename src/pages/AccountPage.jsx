@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   Lock,
   Sparkles,
-  Clock
+  Clock,
+  ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -78,12 +79,17 @@ export default function AccountPage() {
 
   return (
     <div className="max-w-5xl mx-auto pb-16 px-4 sm:px-6 lg:px-8 pt-4 space-y-6">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-xs text-gray-500 pb-2" aria-label="Breadcrumb">
-        <Link to="/" className="hover:text-[#6B1518] transition-colors">Home</Link>
-        <ChevronRight className="w-3 h-3 text-gray-300" />
-        <span className="text-[#6B1518] font-semibold">My Account</span>
-      </nav>
+      {/* Clean Top Navigation */}
+      <div className="pb-2">
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-[#6B1518] py-1 px-2.5 rounded-lg hover:bg-gray-100 transition-colors -ml-2.5 cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4 text-gray-500" />
+          <span>Back to Home</span>
+        </button>
+      </div>
 
       {/* 1. Header Banner */}
       {isAuthenticated && user ? (

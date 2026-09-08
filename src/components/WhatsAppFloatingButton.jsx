@@ -13,12 +13,12 @@ export default function WhatsAppFloatingButton() {
     window.open(waLink(msgToUse || defaultMessage), '_blank');
   };
 
-  // The product page has its own WhatsApp action in its sticky bottom bar.
-  // Hide on checkout and order success to prevent obscuring inputs and payment buttons.
+  // Hide on product, checkout, order success, and cart to prevent obscuring inputs and payment buttons.
   if (
     location.pathname.startsWith('/product/') ||
     location.pathname === '/checkout' ||
-    location.pathname === '/order-success'
+    location.pathname === '/order-success' ||
+    location.pathname === '/cart'
   ) {
     return null;
   }

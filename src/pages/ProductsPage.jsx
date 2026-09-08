@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Filter, SlidersHorizontal, RefreshCw, ShoppingBag, ChevronRight } from 'lucide-react';
+import { Search, Filter, SlidersHorizontal, RefreshCw, ShoppingBag, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useStoreData } from '../context/StoreDataContext';
 import ProductCard from '../components/ProductCard';
+import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import { BRAND } from '../config/brand';
 
 export default function ProductsPage() {
   const navigate = useNavigate();
-  const { products, categories } = useStoreData();
+  const { products, categories, loading } = useStoreData();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCategory = searchParams.get('category') || 'all';
 
@@ -54,27 +55,22 @@ export default function ProductsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-xs text-gray-500 pt-1" aria-label="Breadcrumb">
-        <button onClick={() => navigate('/')} className="hover:text-[#6B1518] transition-colors">
-          Home
+      {/* Clean Top Navigation Bar */}
+      <div className="flex items-center justify-between pt-1">
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-[#6B1518] py-1 px-2 rounded-lg hover:bg-gray-100 transition-colors -ml-2 cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4 text-gray-500" />
+          <span>Back to Home</span>
         </button>
-        <ChevronRight className="w-3 h-3 text-gray-300" />
-        {activeCategoryName && activeCategoryName !== 'All Products' ? (
-          <>
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className="hover:text-[#6B1518] transition-colors"
-            >
-              Shop
-            </button>
-            <ChevronRight className="w-3 h-3 text-gray-300" />
-            <span className="text-[#6B1518] font-semibold">{activeCategoryName}</span>
-          </>
-        ) : (
-          <span className="text-[#6B1518] font-semibold">Shop</span>
+        {activeCategoryName && (
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+            {activeCategoryName}
+          </span>
         )}
-      </nav>
+      </div>
 
       {/* Page Header */}
       <div className="border-b border-gray-100 pb-3" data-aos="fade-down">
@@ -130,7 +126,13 @@ export default function ProductsPage() {
       </div>
 
       {/* Product Grid — 2 columns on mobile, 4 columns on desktop */}
-      {filteredProducts.length === 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : filteredProducts.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-gray-100 space-y-4">
           <div className="w-16 h-16 bg-[#F8F0F0] rounded-full flex items-center justify-center mx-auto text-[#6B1518]">
             <ShoppingBag className="w-8 h-8" />
