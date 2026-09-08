@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, CheckCircle2, X, Upload, AlertCircle } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, CheckCircle2, X, Upload, AlertCircle } from 'lucide-react';
 import { useStoreData } from '../../context/StoreDataContext';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 
@@ -13,6 +13,13 @@ export default function AdminCategories() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const filteredCategories = categories.filter((c) =>
+    (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.tagline || '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.id || '').toLowerCase().includes(search.toLowerCase())
+  );
 
   const handleOpenAdd = () => {
     setEditingCat(null);
@@ -102,42 +109,91 @@ export default function AdminCategories() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((cat) => (
-          <div key={cat.id} className="bg-white rounded-3xl border border-gray-100 shadow-2xs overflow-hidden flex flex-col justify-between">
-            <div className="relative aspect-video bg-gray-100">
-              <img src={cat.image || '/slider/image copy 2.png'} alt={cat.name} className="w-full h-full object-cover" />
-              <span className="absolute top-3 right-3 bg-emerald-600 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
-                <CheckCircle2 className="w-3 h-3" /> Live Storefront
-              </span>
-            </div>
+      {/* Search Bar */}
+      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search categories by name or ID..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full text-xs pl-10 pr-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#6B1518]"
+          />
+        </div>
+        <div className="text-xs font-bold text-gray-500">
+          Showing {filteredCategories.length} {filteredCategories.length === 1 ? 'category' : 'categories'}
+        </div>
+      </div>
 
-            <div className="p-5 space-y-2">
-              <h3 className="font-serif text-lg font-bold text-gray-900">{cat.name}</h3>
-              <p className="text-xs text-gray-500 line-clamp-2">{cat.tagline || cat.description || 'Curated clothing items'}</p>
-
-              <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-                <span className="text-[10px] font-mono text-gray-400">ID: {cat.id}</span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleOpenEdit(cat)}
-                    className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 border border-blue-100"
-                    title="Edit Category"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(cat.id)}
-                    className="p-2 rounded-xl text-red-600 hover:bg-red-50 border border-red-100"
-                    title="Delete Category"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Categories Table Listing (Compact like Products) */}
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-2xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider text-[10px] font-extrabold border-b border-gray-100">
+              <tr>
+                <th className="p-4">Category</th>
+                <th className="p-4">Tagline / Description</th>
+                <th className="p-4">Category ID</th>
+                <th className="p-4">Storefront Status</th>
+                <th className="p-4 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 font-medium">
+              {filteredCategories.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center py-12 text-gray-400 font-serif text-sm">
+                    No categories found. Click "+ Add New Category" to create one.
+                  </td>
+                </tr>
+              ) : (
+                filteredCategories.map((cat) => (
+                  <tr key={cat.id} className="hover:bg-gray-50/80 transition-colors">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={cat.image || '/products/saree-placeholder.png'}
+                          alt={cat.name}
+                          className="w-12 h-12 object-cover rounded-xl border border-gray-100 shrink-0"
+                        />
+                        <div>
+                          <div className="font-bold text-gray-900 text-xs">{cat.name}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4 text-gray-500 max-w-xs truncate">
+                      {cat.tagline || cat.description || '—'}
+                    </td>
+                    <td className="p-4 font-mono text-gray-400 text-[11px]">{cat.id}</td>
+                    <td className="p-4">
+                      <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Live
+                      </span>
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleOpenEdit(cat)}
+                          className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 border border-blue-100 transition-colors cursor-pointer"
+                          title="Edit Category"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(cat.id)}
+                          className="p-2 rounded-xl text-red-600 hover:bg-red-50 border border-red-100 transition-colors cursor-pointer"
+                          title="Delete Category"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {isModalOpen && (
