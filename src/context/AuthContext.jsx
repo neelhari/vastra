@@ -260,15 +260,35 @@ export function AuthProvider({ children }) {
     });
   };
 
-  // 6. Add Address
+  // 6. Add Address (Saves to user profile and localStorage, syncing to Account page)
   const addAddress = (address) => {
+    let createdAddr = null;
     setUser((prev) => {
-      if (!prev) return null;
-      const newAddresses = [...(prev.addresses || []), { ...address, id: `addr_${Date.now()}` }];
-      const updated = { ...prev, addresses: newAddresses };
-      setRegisteredUsers((all) => all.map((u) => (u.id === prev.id ? updated : u)));
+      const baseUser = prev || {
+        id: `usr_${Date.now()}`,
+        name: address.name || 'Customer',
+        phone: address.phone || '',
+        email: address.email || '',
+        addresses: [],
+      };
+      createdAddr = {
+        ...address,
+        id: address.id || `addr_${Date.now()}`,
+        isDefault: (baseUser.addresses || []).length === 0,
+      };
+      const newAddresses = [...(baseUser.addresses || []), createdAddr];
+      const updated = { ...baseUser, addresses: newAddresses };
+      try {
+        localStorage.setItem('aalaya_user', JSON.stringify(updated));
+      } catch (e) {
+        console.warn('LocalStorage save error:', e);
+      }
+      if (prev?.id) {
+        setRegisteredUsers((all) => all.map((u) => (u.id === prev.id ? updated : u)));
+      }
       return updated;
     });
+    return createdAddr;
   };
 
   // 7. Logout

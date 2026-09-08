@@ -6,10 +6,11 @@ import { useStoreData } from '../context/StoreDataContext';
 import ProductCard from '../components/ProductCard';
 import CategoryTile from '../components/CategoryTile';
 import { BRAND } from '../config/brand';
+import ProductCardSkeleton from '../components/ProductCardSkeleton';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { products, categories, banners } = useStoreData();
+  const { products, categories, banners, loading } = useStoreData();
 
   const activeBanners = banners.filter((b) => b.active);
   const sliderImages = activeBanners.length > 0
@@ -138,9 +139,11 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
+            : featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
         </div>
 
         <div className="flex justify-center pt-1">
@@ -170,9 +173,11 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {bestSellers.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
+            : bestSellers.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
         </div>
       </section>
 

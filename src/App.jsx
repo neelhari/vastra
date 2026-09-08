@@ -18,6 +18,7 @@ import CartDrawer from './components/CartDrawer';
 import WishlistDrawer from './components/WishlistDrawer';
 import SearchModal from './components/SearchModal';
 import Toast from './components/Toast';
+import TopLoadingBar from './components/TopLoadingBar';
 
 import HomePage from './pages/HomePage';
 import CategoriesPage from './pages/CategoriesPage';
@@ -85,6 +86,9 @@ function AppContent() {
       {showSplash && !isAdminRoute && <SplashScreen onComplete={() => setShowSplash(false)} />}
 
       <ScrollAndAosReset />
+
+      {/* Top Loading Progress Buffer (Hostinger style) */}
+      <TopLoadingBar />
 
       {/* Toast Feedback */}
       <Toast />

@@ -54,7 +54,16 @@ export async function uploadToCloudinary(file) {
       console.error('Cloudinary upload error:', message);
       return { success: false, message };
     }
-    return { success: true, url: data.secure_url, publicId: data.public_id, raw: data };
+    let finalUrl = data.secure_url;
+    // Automatic Cloudinary video compression & web optimization:
+    // q_auto: automatic optimal compression bitrate
+    // vc_auto: modern web video codec (H.264 / VP9 / AV1)
+    // w_720: limit resolution to 720p HD to cut video size by 70-85%
+    if (resourceType === 'video' && finalUrl && finalUrl.includes('/video/upload/')) {
+      finalUrl = finalUrl.replace('/video/upload/', '/video/upload/q_auto,vc_auto,w_720/');
+    }
+
+    return { success: true, url: finalUrl, publicId: data.public_id, raw: data };
   } catch (err) {
     console.error('Cloudinary upload error:', err);
     return { success: false, message: err.message || 'Network error while uploading to Cloudinary.' };
