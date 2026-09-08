@@ -85,7 +85,16 @@ export function AdminAuthProvider({ children }) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    // 1. Try master admin credentials first
+    // 1. Try real Supabase Auth first so valid JWT and admin write permissions are granted
+    const res = await signInAdmin(cleanEmail, cleanPassword);
+    if (res.success && res.data?.session) {
+      setSession(res.data.session);
+      const admin = await isUserAdmin(res.data.session.user.id);
+      setIsAdmin(admin);
+      return res;
+    }
+
+    // 2. Offline / local fallback if Supabase auth is unreachable
     if (
       (cleanEmail === 'admin@aalayavastra.com' || cleanEmail === 'harini@aalayavastra.com') &&
       cleanPassword === 'admin123'
@@ -101,15 +110,6 @@ export function AdminAuthProvider({ children }) {
       setIsAdmin(true);
       localStorage.setItem('aalaya_admin_session', JSON.stringify(mockAdminSession));
       return { success: true, data: mockAdminSession };
-    }
-
-    // 2. Try real Supabase Auth
-    const res = await signInAdmin(cleanEmail, cleanPassword);
-    if (res.success && res.data?.session) {
-      setSession(res.data.session);
-      const admin = await isUserAdmin(res.data.session.user.id);
-      setIsAdmin(admin);
-      return res;
     }
 
     return res;
