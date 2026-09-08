@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, CheckCircle2, Grid, Sparkles, Check, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, CheckCircle2, X, Upload, AlertCircle } from 'lucide-react';
 import { useStoreData } from '../../context/StoreDataContext';
+import { uploadToCloudinary } from '../../lib/cloudinary';
 
 export default function AdminCategories() {
   const { categories, addCategory, updateCategory, deleteCategory } = useStoreData();
@@ -8,11 +9,17 @@ export default function AdminCategories() {
   const [editingCat, setEditingCat] = useState(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [image, setImage] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const handleOpenAdd = () => {
     setEditingCat(null);
     setName('');
     setDescription('');
+    setImage('');
+    setUploadError('');
     setIsModalOpen(true);
   };
 
@@ -20,23 +27,45 @@ export default function AdminCategories() {
     setEditingCat(cat);
     setName(cat.name);
     setDescription(cat.tagline || cat.description || '');
+    setImage(cat.image || '');
+    setUploadError('');
     setIsModalOpen(true);
   };
 
-  const [saving, setSaving] = useState(false);
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    setUploadError('');
+
+    const res = await uploadToCloudinary(file);
+    if (res.success) {
+      setImage(res.url);
+    } else {
+      setUploadError(`Failed to upload photo: ${res.message}`);
+    }
+    setUploadingImage(false);
+    e.target.value = '';
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || saving) return;
+    if (!name.trim() || saving || uploadingImage) return;
 
     setSaving(true);
+    const categoryImage = image || editingCat?.image || '/products/saree-placeholder.png';
+
     const result = editingCat
-      ? await updateCategory(editingCat.id, { name, tagline: description })
+      ? await updateCategory(editingCat.id, {
+          name: name.trim(),
+          tagline: description.trim(),
+          image: categoryImage,
+        })
       : await addCategory({
           id: name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-          name,
-          tagline: description,
-          image: '/slider/image copy 2.png',
+          name: name.trim(),
+          tagline: description.trim(),
+          image: categoryImage,
           active: true,
         });
     setSaving(false);
@@ -122,12 +151,19 @@ export default function AdminCategories() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+              {uploadError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-[11px] font-semibold p-3 rounded-xl flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+
               <div>
                 <label className="block font-bold text-gray-800 mb-1">Category Name *</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Designer Dupattas"
+                  placeholder="e.g. Handloom Sarees"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6B1518] focus:outline-none"
@@ -138,19 +174,79 @@ export default function AdminCategories() {
                 <label className="block font-bold text-gray-800 mb-1">Tagline / Short Description</label>
                 <input
                   type="text"
-                  placeholder="e.g. Festive handloom weaves"
+                  placeholder="e.g. Timeless Weaves & Elegant Drapes"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6B1518] focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2.5 rounded-xl border border-gray-300 font-bold">
+              {/* Category Cover Photo Upload */}
+              <div className="space-y-2 pt-1 border-t border-gray-100">
+                <label className="block font-bold text-gray-800">Category Cover Photo</label>
+                
+                {image ? (
+                  <div className="relative rounded-2xl overflow-hidden aspect-video border border-gray-200 bg-gray-50 group">
+                    <img src={image} alt="Category Cover" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="change-category-photo"
+                      />
+                      <label
+                        htmlFor="change-category-photo"
+                        className="bg-white text-gray-900 font-bold px-3 py-1.5 rounded-xl cursor-pointer text-xs hover:bg-gray-100 shadow-md"
+                      >
+                        {uploadingImage ? 'Uploading...' : 'Change Photo'}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setImage('')}
+                        className="bg-red-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-red-700 shadow-md"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-300 rounded-2xl p-5 text-center hover:border-[#6B1518] transition-colors bg-gray-50">
+                    <Upload className="w-6 h-6 text-gray-400 mx-auto mb-1.5" />
+                    <p className="font-bold text-gray-800">Upload Category Cover Photo</p>
+                    <p className="text-gray-400 text-[11px] mt-0.5">JPG, PNG or WEBP up to 10MB</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="category-photo-input"
+                    />
+                    <label
+                      htmlFor="category-photo-input"
+                      className="mt-2.5 inline-block bg-[#6B1518] text-white font-bold text-xs px-4 py-2 rounded-xl cursor-pointer hover:bg-[#4B0F11] shadow-xs"
+                    >
+                      {uploadingImage ? 'Uploading Photo...' : 'Select Cover Photo'}
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-gray-300 font-bold hover:bg-gray-50"
+                >
                   Cancel
                 </button>
-                <button type="submit" disabled={saving} className="bg-[#6B1518] disabled:opacity-60 text-white px-5 py-2.5 rounded-xl font-bold">
-                  {saving ? 'Saving...' : 'Save & Publish'}
+                <button
+                  type="submit"
+                  disabled={saving || uploadingImage}
+                  className="bg-[#6B1518] hover:bg-[#4B0F11] disabled:opacity-60 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-1.5 shadow-md"
+                >
+                  {saving ? 'Saving...' : 'Save & Publish Category'}
                 </button>
               </div>
             </form>
