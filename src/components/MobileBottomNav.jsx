@@ -10,6 +10,10 @@ export default function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  if (location.pathname === '/checkout' || location.pathname === '/order-success') {
+    return null;
+  }
+
   const goTo = (path) => {
     navigate(path);
     window.scrollTo({ top: 0, behavior: 'smooth' });

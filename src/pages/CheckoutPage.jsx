@@ -167,7 +167,6 @@ export default function CheckoutPage() {
         },
         description: `Order ${orderId} - ${BRAND.name}`,
         onSuccess: async (response) => {
-          setPaymentSuccessInfo(response.razorpay_payment_id);
           await finalizeOrder({
             orderId,
             paymentId: response.razorpay_payment_id,
@@ -199,55 +198,55 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-xs text-gray-500" aria-label="Breadcrumb">
-        <Link to="/" className="hover:text-[#6B1518] transition-colors">Home</Link>
-        <span>/</span>
-        <Link to="/cart" className="hover:text-[#6B1518] transition-colors">Cart</Link>
-        <span>/</span>
-        <span className="text-[#6B1518] font-semibold">Checkout</span>
-      </nav>
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-6">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#D3923A]">Secure Payment & Delivery</span>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-gray-900 mt-1">Complete Your Order</h1>
-        </div>
-
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      {/* Top Header Bar with Clean Back Button */}
+      <div className="flex items-center justify-between pb-3 border-b border-gray-200/70">
         <button
+          type="button"
           onClick={() => navigate('/cart')}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-[#6B1518]"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-[#6B1518] py-1.5 px-3 rounded-xl hover:bg-gray-100 transition-colors -ml-3"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 text-gray-500" />
           <span>Back to Cart</span>
         </button>
+
+        <div className="inline-flex items-center gap-1.5 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-3 py-1 rounded-full font-medium">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Secure Checkout</span>
+        </div>
       </div>
 
-      <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Form Column */}
-        <div className="lg:col-span-7 space-y-6">
-          {/* Section 1: Customer & Delivery Address */}
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-5">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-              <MapPin className="w-5 h-5 text-[#6B1518]" />
-              <h2 className="font-serif text-xl font-bold text-gray-900">Shipping & Delivery Details</h2>
+      {/* Page Title */}
+      <div>
+        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-gray-900">Checkout</h1>
+        <p className="text-xs text-gray-500 mt-1">Please enter your shipping address and choose your preferred payment method.</p>
+      </div>
+
+      <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        {/* Left Column: Delivery & Payment Details */}
+        <div className="lg:col-span-7 space-y-5">
+          {/* Card 1: Customer & Delivery Address */}
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200/80 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
+              <MapPin className="w-4 h-4 text-[#6B1518]" />
+              <h2 className="text-sm font-bold text-gray-900">1. Delivery Address</h2>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               {/* Full Name */}
               <div>
-                <label className="block text-xs font-bold text-gray-800 uppercase mb-1">Full Name *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder="Enter your name"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className={`w-full text-xs pl-9 pr-4 py-3 rounded-xl border focus:outline-none ${
-                      errors.fullName ? 'border-red-500 bg-red-50' : 'border-gray-200 focus:border-[#6B1518]'
+                    className={`w-full text-xs sm:text-sm pl-9 pr-3.5 py-2.5 rounded-xl border focus:outline-none transition-all ${
+                      errors.fullName ? 'border-red-500 bg-red-50/50' : 'border-gray-200 focus:border-[#6B1518] focus:ring-1 focus:ring-[#6B1518]'
                     }`}
                   />
                 </div>
@@ -255,18 +254,20 @@ export default function CheckoutPage() {
               </div>
 
               {/* Phone & Email */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">Mobile Number *</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Mobile Number <span className="text-red-500">*</span>
+                  </label>
                   <div className="relative">
-                    <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="tel"
                       placeholder="10-digit mobile number"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className={`w-full text-xs pl-9 pr-4 py-3 rounded-xl border focus:outline-none ${
-                        errors.phone ? 'border-red-500 bg-red-50' : 'border-gray-200 focus:border-[#6B1518]'
+                      className={`w-full text-xs sm:text-sm pl-9 pr-3.5 py-2.5 rounded-xl border focus:outline-none transition-all ${
+                        errors.phone ? 'border-red-500 bg-red-50/50' : 'border-gray-200 focus:border-[#6B1518] focus:ring-1 focus:ring-[#6B1518]'
                       }`}
                     />
                   </div>
@@ -274,15 +275,17 @@ export default function CheckoutPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">Email Address (Optional)</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Email Address <span className="text-gray-400 font-normal">(Optional)</span>
+                  </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="email"
                       placeholder="name@example.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full text-xs pl-9 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#6B1518]"
+                      className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#6B1518] focus:ring-1 focus:ring-[#6B1518] transition-all"
                     />
                   </div>
                 </div>
@@ -290,79 +293,81 @@ export default function CheckoutPage() {
 
               {/* Street Address */}
               <div>
-                <label className="block text-xs font-bold text-gray-800 uppercase mb-1">Delivery Address *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Complete Address <span className="text-red-500">*</span>
+                </label>
                 <textarea
-                  rows={3}
-                  placeholder="House No., Building Name, Street / Colony Area..."
+                  rows={2}
+                  placeholder="House / Flat No., Building, Street name, Area"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className={`w-full text-xs p-3 rounded-xl border focus:outline-none resize-none ${
-                    errors.address ? 'border-red-500 bg-red-50' : 'border-gray-200 focus:border-[#6B1518]'
+                  className={`w-full text-xs sm:text-sm p-3 rounded-xl border focus:outline-none resize-none transition-all ${
+                    errors.address ? 'border-red-500 bg-red-50/50' : 'border-gray-200 focus:border-[#6B1518] focus:ring-1 focus:ring-[#6B1518]'
                   }`}
                 />
                 {errors.address && <p className="text-[11px] text-red-500 mt-1">{errors.address}</p>}
               </div>
 
               {/* City, State, Pincode Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">City / Town *</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">City / Town *</label>
                   <input
                     type="text"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#6B1518]"
+                    className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#6B1518] focus:ring-1 focus:ring-[#6B1518]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">Pincode *</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Pincode *</label>
                   <input
                     type="text"
-                    placeholder="6-digit pincode"
+                    placeholder="6 digits"
                     value={formData.pincode}
                     onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                    className={`w-full text-xs p-3 rounded-xl border focus:outline-none ${
-                      errors.pincode ? 'border-red-500 bg-red-50' : 'border-gray-200 focus:border-[#6B1518]'
+                    className={`w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border focus:outline-none ${
+                      errors.pincode ? 'border-red-500 bg-red-50/50' : 'border-gray-200 focus:border-[#6B1518] focus:ring-1 focus:ring-[#6B1518]'
                     }`}
                   />
                   {errors.pincode && <p className="text-[11px] text-red-500 mt-1">{errors.pincode}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">State *</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">State *</label>
                   <input
                     type="text"
                     value={formData.state}
                     onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    className="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#6B1518]"
+                    className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#6B1518] focus:ring-1 focus:ring-[#6B1518]"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Section 2: Payment Method Selection */}
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+          {/* Card 2: Payment Method Selection */}
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200/80 shadow-2xs space-y-3.5">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
               <div className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-[#6B1518]" />
-                <h2 className="font-serif text-xl font-bold text-gray-900">Select Payment Method</h2>
+                <CreditCard className="w-4 h-4 text-[#6B1518]" />
+                <h2 className="text-sm font-bold text-gray-900">2. Payment Method</h2>
               </div>
-              <div className="flex items-center gap-1.5 bg-[#FAF8F5] border border-gray-200 px-2.5 py-1 rounded-full text-[10px] font-bold text-[#6B1518]">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Razorpay Secured</span>
+              <div className="flex items-center gap-1 text-[11px] text-gray-500 font-medium">
+                <Lock className="w-3 h-3 text-emerald-600" />
+                <span>Encrypted</span>
               </div>
             </div>
 
-            <div className="space-y-3">
-              {/* Razorpay Online Payment Option */}
+            <div className="space-y-2.5">
+              {/* Option 1: Razorpay Online Payment */}
               <label
                 onClick={() => setFormData({ ...formData, paymentMethod: 'razorpay' })}
-                className={`flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-all ${
+                className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                   formData.paymentMethod === 'razorpay'
-                    ? 'border-[#6B1518] bg-[#F8F0F0]/60 ring-2 ring-[#6B1518]/20 shadow-xs'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-[#6B1518] bg-[#FAF3F3] ring-1 ring-[#6B1518]'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
                 }`}
               >
                 <input
@@ -372,48 +377,45 @@ export default function CheckoutPage() {
                   onChange={() => setFormData({ ...formData, paymentMethod: 'razorpay' })}
                   className="mt-1 text-[#6B1518] focus:ring-[#6B1518]"
                 />
-                <div className="flex-1 space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs sm:text-sm text-gray-900">Online Payment via Razorpay</span>
-                      <span className="bg-[#6B1518] text-white text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full">
-                        Recommended
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                      0% Payment Fees
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-bold text-gray-900">
+                      Online Payment (UPI, Cards, NetBanking)
+                    </span>
+                    <span className="text-[10px] font-bold text-[#6B1518] bg-[#6B1518]/10 px-2 py-0.5 rounded-md shrink-0">
+                      RECOMMENDED
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600">
-                    Pay instantly using <strong>UPI (Google Pay, PhonePe, Paytm, BHIM)</strong>, <strong>Credit/Debit Cards</strong> (Visa, Mastercard, RuPay), <strong>NetBanking (50+ banks)</strong>, or <strong>Wallets</strong>.
+                  <p className="text-[11px] text-gray-600 mt-1">
+                    Instant payment via Google Pay, PhonePe, Paytm, Debit / Credit Cards, or NetBanking.
                   </p>
-                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                    <span className="text-[10px] font-bold bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md shadow-2xs">
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    <span className="text-[10px] font-semibold text-gray-600 bg-white border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
                       UPI / QR
                     </span>
-                    <span className="text-[10px] font-bold bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md shadow-2xs">
+                    <span className="text-[10px] font-semibold text-gray-600 bg-white border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
                       Google Pay
                     </span>
-                    <span className="text-[10px] font-bold bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md shadow-2xs">
+                    <span className="text-[10px] font-semibold text-gray-600 bg-white border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
                       PhonePe
                     </span>
-                    <span className="text-[10px] font-bold bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md shadow-2xs">
-                      Credit / Debit Cards
+                    <span className="text-[10px] font-semibold text-gray-600 bg-white border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
+                      Cards
                     </span>
-                    <span className="text-[10px] font-bold bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md shadow-2xs">
+                    <span className="text-[10px] font-semibold text-gray-600 bg-white border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
                       NetBanking
                     </span>
                   </div>
                 </div>
               </label>
 
-              {/* COD Option */}
+              {/* Option 2: Cash on Delivery (COD) */}
               <label
                 onClick={() => setFormData({ ...formData, paymentMethod: 'cod' })}
-                className={`flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-all ${
+                className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                   formData.paymentMethod === 'cod'
-                    ? 'border-[#6B1518] bg-[#F8F0F0]/50 ring-1 ring-[#6B1518]'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-[#6B1518] bg-[#FAF3F3] ring-1 ring-[#6B1518]'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
                 }`}
               >
                 <input
@@ -423,19 +425,19 @@ export default function CheckoutPage() {
                   onChange={() => setFormData({ ...formData, paymentMethod: 'cod' })}
                   className="mt-1 text-[#6B1518] focus:ring-[#6B1518]"
                 />
-                <div className="flex-1">
-                  <span className="font-bold text-xs sm:text-sm text-gray-900">Cash on Delivery (COD)</span>
-                  <p className="text-xs text-gray-500 mt-0.5">Pay in cash or UPI when your parcel is delivered at your doorstep.</p>
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs sm:text-sm font-bold text-gray-900">Cash on Delivery (COD)</span>
+                  <p className="text-[11px] text-gray-500 mt-0.5">Pay via cash or UPI upon package arrival at your doorstep.</p>
                 </div>
               </label>
 
-              {/* WhatsApp Option */}
+              {/* Option 3: WhatsApp Direct Order */}
               <label
                 onClick={() => setFormData({ ...formData, paymentMethod: 'whatsapp' })}
-                className={`flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-all ${
+                className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                   formData.paymentMethod === 'whatsapp'
-                    ? 'border-[#25D366] bg-emerald-50/50 ring-1 ring-[#25D366]'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-emerald-600 bg-emerald-50/40 ring-1 ring-emerald-600'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
                 }`}
               >
                 <input
@@ -443,62 +445,71 @@ export default function CheckoutPage() {
                   name="paymentMethod"
                   checked={formData.paymentMethod === 'whatsapp'}
                   onChange={() => setFormData({ ...formData, paymentMethod: 'whatsapp' })}
-                  className="mt-1 text-[#25D366] focus:ring-[#25D366]"
+                  className="mt-1 text-emerald-600 focus:ring-emerald-600"
                 />
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <MessageCircle className="w-4 h-4 text-[#25D366]" />
-                    <span className="font-bold text-xs sm:text-sm text-gray-900">Direct WhatsApp Instant Order</span>
+                    <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                    <span className="text-xs sm:text-sm font-bold text-gray-900">Order via WhatsApp</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">Send order copy to WhatsApp for direct chat verification & payment assistance.</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">
+                    Send order summary to our WhatsApp for direct chat verification and assistance.
+                  </p>
                 </div>
               </label>
             </div>
           </div>
         </div>
 
-        {/* Right Summary Column */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-5 sticky top-24">
-            <h3 className="font-serif text-xl font-bold text-gray-900 border-b border-gray-100 pb-3">
-              Order Items ({cartItems.length})
-            </h3>
+        {/* Right Column: Order Summary */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-2xs space-y-4 sticky top-24">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <h3 className="text-sm font-bold text-gray-900">Order Summary</h3>
+              <span className="text-xs text-gray-500 font-medium">{cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}</span>
+            </div>
 
-            {/* Product items mini list */}
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+            {/* Product items list */}
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-1 divide-y divide-gray-50">
               {cartItems.map((item) => (
-                <div key={item.itemKey} className="flex items-center gap-3">
-                  <img src={item.image} alt={item.name} className="w-12 h-14 object-cover rounded-lg shrink-0" />
+                <div key={item.itemKey} className="pt-2.5 first:pt-0 flex items-center gap-3">
+                  <img
+                    src={item.image || '/products/saree-placeholder.png'}
+                    alt={item.name}
+                    className="w-12 h-14 object-cover rounded-lg border border-gray-100 shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-xs font-semibold text-gray-900 line-clamp-1">{item.name}</h4>
-                    <span className="text-[11px] text-gray-500">Qty: {item.quantity}</span>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      Qty: {item.quantity} {item.selectedSize && `• Size: ${item.selectedSize}`}
+                    </p>
                   </div>
-                  <span className="text-xs font-bold text-gray-900">
+                  <span className="text-xs font-bold text-gray-900 shrink-0">
                     ₹{(item.price * item.quantity).toLocaleString('en-IN')}
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* Calculations */}
-            <div className="space-y-2 text-xs text-gray-600 border-t border-gray-100 pt-4">
+            {/* Price Calculations */}
+            <div className="space-y-2 text-xs text-gray-600 border-t border-gray-100 pt-3">
               <div className="flex justify-between">
-                <span>Items Subtotal:</span>
+                <span>Items Subtotal</span>
                 <span className="font-semibold text-gray-900">₹{subtotal.toLocaleString('en-IN')}</span>
               </div>
               {appliedCoupon && (
                 <div className="flex justify-between text-emerald-600 font-semibold">
-                  <span>Discount ({appliedCoupon.code}):</span>
+                  <span>Discount ({appliedCoupon.code})</span>
                   <span>-₹{discountAmount.toLocaleString('en-IN')}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Shipping Charge:</span>
-                <span>{isFreeShipping ? <strong className="text-emerald-600">FREE</strong> : '₹99'}</span>
+                <span>Shipping</span>
+                <span>{isFreeShipping ? <strong className="text-emerald-600 font-semibold">FREE</strong> : '₹99'}</span>
               </div>
-              <div className="flex justify-between text-base font-bold text-gray-900 pt-3 border-t border-gray-200">
-                <span>Total Amount:</span>
-                <span className="text-[#6B1518] text-xl font-extrabold">
+              <div className="flex justify-between text-sm font-bold text-gray-900 pt-2.5 border-t border-gray-200">
+                <span>Total Payable</span>
+                <span className="text-[#6B1518] text-base sm:text-lg font-extrabold">
                   ₹{totalAmount.toLocaleString('en-IN')}
                 </span>
               </div>
@@ -513,18 +524,18 @@ export default function CheckoutPage() {
                     const orderId = `AV-${Math.floor(100000 + Math.random() * 900000)}`;
                     sendWhatsAppCopy(orderId);
                   }}
-                  className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold px-3 py-2 rounded-lg transition-colors"
+                  className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors"
                 >
                   <MessageCircle className="w-3.5 h-3.5" /> Send Order via WhatsApp
                 </button>
               </div>
             )}
 
-            {/* Submit Action */}
+            {/* Submit Place Order Button */}
             <button
               type="submit"
               disabled={placingOrder}
-              className="w-full bg-[#6B1518] hover:bg-[#4B0F11] disabled:opacity-60 text-white py-4 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-all transform hover:scale-[1.01] cursor-pointer"
+              className="w-full bg-[#6B1518] hover:bg-[#4B0F11] disabled:opacity-60 text-white py-3 px-5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
             >
               {formData.paymentMethod === 'razorpay' ? (
                 <>
@@ -532,7 +543,7 @@ export default function CheckoutPage() {
                   <span>
                     {placingOrder
                       ? 'Connecting to Razorpay...'
-                      : `Pay with Razorpay (₹${totalAmount.toLocaleString('en-IN')})`}
+                      : `Pay ₹${totalAmount.toLocaleString('en-IN')} with Razorpay`}
                   </span>
                 </>
               ) : formData.paymentMethod === 'whatsapp' ? (
@@ -540,8 +551,8 @@ export default function CheckoutPage() {
                   <MessageCircle className="w-4 h-4 text-[#25D366]" />
                   <span>
                     {placingOrder
-                      ? 'Placing WhatsApp Order...'
-                      : `Place Order via WhatsApp (₹${totalAmount.toLocaleString('en-IN')})`}
+                      ? 'Opening WhatsApp...'
+                      : `Order on WhatsApp (₹${totalAmount.toLocaleString('en-IN')})`}
                   </span>
                 </>
               ) : (
@@ -557,8 +568,8 @@ export default function CheckoutPage() {
             </button>
 
             <div className="text-center text-[11px] text-gray-500 flex items-center justify-center gap-1.5 pt-1">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>100% Encrypted & Bank-Grade Security via Razorpay</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>100% Encrypted & Bank-Grade Security</span>
             </div>
           </div>
         </div>

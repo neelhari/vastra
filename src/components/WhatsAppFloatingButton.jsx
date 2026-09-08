@@ -13,9 +13,15 @@ export default function WhatsAppFloatingButton() {
     window.open(waLink(msgToUse || defaultMessage), '_blank');
   };
 
-  // The product page has its own WhatsApp action in its sticky bottom bar —
-  // showing this floating one too on mobile would stack two green circles.
-  if (location.pathname.startsWith('/product/')) return null;
+  // The product page has its own WhatsApp action in its sticky bottom bar.
+  // Hide on checkout and order success to prevent obscuring inputs and payment buttons.
+  if (
+    location.pathname.startsWith('/product/') ||
+    location.pathname === '/checkout' ||
+    location.pathname === '/order-success'
+  ) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-20 right-4 xl:bottom-6 sm:right-6 z-50 flex flex-col items-end max-w-[calc(100vw-2rem)]">
