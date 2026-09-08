@@ -325,6 +325,7 @@ function mapOrderToDb(o) {
     total_amount: o.totalAmount || 0,
     payment_method: method,
     payment_status: o.paymentStatus || 'Pending',
+    payment_id: o.paymentId || null,
     status: o.status || 'Pending',
     coupon_code: o.couponCode || null,
   };
@@ -518,12 +519,12 @@ export async function saveOrderToSupabase(orderData) {
   if (!supabase) return { success: false, message: 'Supabase client not initialized' };
   try {
     const row = mapOrderToDb(orderData);
-    const { data, error } = await supabase.from('orders').insert([row]).select().single();
+    const { error } = await supabase.from('orders').insert([row]);
     if (error) {
       console.warn('Supabase order insert error:', error.message);
       return { success: false, message: error.message };
     }
-    return { success: true, data: mapOrderFromDb(data) };
+    return { success: true, data: orderData };
   } catch (err) {
     console.warn('Supabase save order failed:', err);
     return { success: false, message: err.message };
@@ -550,21 +551,19 @@ export async function updateOrderStatusInDb(id, status) {
 export async function saveContactMessageToSupabase(messageData) {
   if (!supabase) return { success: false, message: 'Supabase client not initialized' };
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('contact_messages')
       .insert([{
         name: messageData.name,
         phone: messageData.phone || null,
         email: messageData.email || null,
         message: messageData.message,
-      }])
-      .select()
-      .single();
+      }]);
     if (error) {
       console.warn('Supabase contact insert error:', error.message);
       return { success: false, message: error.message };
     }
-    return { success: true, data: mapMessageFromDb(data) };
+    return { success: true, data: messageData };
   } catch (err) {
     console.warn('Supabase contact save failed:', err);
     return { success: false, message: err.message };
