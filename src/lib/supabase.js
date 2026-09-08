@@ -272,6 +272,12 @@ function mapCouponToDb(c) {
 
 function mapOrderFromDb(row) {
   if (!row) return row;
+  const paymentMethodStr = row.payment_method || '';
+  let extractedPaymentId = row.payment_id || null;
+  if (!extractedPaymentId && paymentMethodStr.includes('(ID: ')) {
+    extractedPaymentId = paymentMethodStr.split('(ID: ')[1]?.replace(')', '') || null;
+  }
+
   return {
     id: row.id,
     customerName: row.customer_name,
@@ -286,7 +292,8 @@ function mapOrderFromDb(row) {
     subtotal: Number(row.subtotal) || 0,
     deliveryCharge: Number(row.delivery_charge) || 0,
     totalAmount: Number(row.total_amount) || 0,
-    paymentMethod: row.payment_method || '',
+    paymentMethod: paymentMethodStr,
+    paymentId: extractedPaymentId,
     paymentStatus: row.payment_status || 'Pending',
     status: row.status || 'Pending',
     couponCode: row.coupon_code || null,
@@ -296,6 +303,13 @@ function mapOrderFromDb(row) {
 }
 
 function mapOrderToDb(o) {
+  let method = o.paymentMethod || null;
+  if (o.paymentId && method && !method.includes('(ID: ')) {
+    method = `${method} (ID: ${o.paymentId})`;
+  } else if (o.paymentId && !method) {
+    method = `Razorpay (ID: ${o.paymentId})`;
+  }
+
   return {
     id: o.id,
     customer_name: o.customerName,
@@ -309,7 +323,7 @@ function mapOrderToDb(o) {
     subtotal: o.subtotal || 0,
     delivery_charge: o.deliveryCharge || 0,
     total_amount: o.totalAmount || 0,
-    payment_method: o.paymentMethod || null,
+    payment_method: method,
     payment_status: o.paymentStatus || 'Pending',
     status: o.status || 'Pending',
     coupon_code: o.couponCode || null,

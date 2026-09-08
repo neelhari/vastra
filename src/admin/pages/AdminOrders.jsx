@@ -93,7 +93,25 @@ export default function AdminOrders() {
                   </td>
                   <td className="p-4 text-gray-500">{ord.date}</td>
                   <td className="p-4 font-extrabold text-gray-900 text-sm">₹{ord.totalAmount.toLocaleString('en-IN')}</td>
-                  <td className="p-4 font-semibold text-gray-700">{ord.paymentMethod}</td>
+                  <td className="p-4">
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${
+                        ord.paymentStatus === 'Paid' || (ord.paymentMethod && ord.paymentMethod.toLowerCase().includes('paid'))
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {ord.paymentStatus === 'Paid' ? 'PAID' : 'PENDING'}
+                      </span>
+                      <span className="text-[11px] font-medium text-gray-700 truncate max-w-[150px]" title={ord.paymentMethod}>
+                        {ord.paymentMethod || 'Online'}
+                      </span>
+                      {ord.paymentId && (
+                        <span className="text-[9px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                          {ord.paymentId}
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="p-4">
                     <select
                       value={ord.status}
@@ -140,7 +158,7 @@ export default function AdminOrders() {
                 <h3 className="font-serif text-lg font-bold text-[#6B1518]">Order Details ({selectedOrder.id})</h3>
                 <p className="text-[11px] text-gray-500">Placed on {selectedOrder.date}</p>
               </div>
-              <button onClick={() => setSelectedOrder(null)} className="font-bold text-gray-400 hover:text-gray-700 text-sm">✕</button>
+              <button onClick={() => setSelectedOrder(null)} className="font-bold text-gray-400 hover:text-gray-700 text-sm cursor-pointer">✕</button>
             </div>
 
             <div className="space-y-3 bg-[#FAF8F5] p-4 rounded-2xl border border-gray-100">
@@ -149,6 +167,29 @@ export default function AdminOrders() {
                 <div><span className="text-gray-400 block text-[10px]">Phone Number</span><span className="font-bold text-gray-900">{selectedOrder.customerPhone}</span></div>
               </div>
               <div><span className="text-gray-400 block text-[10px]">Delivery Address</span><span className="font-bold text-gray-900">{selectedOrder.address}</span></div>
+              
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200">
+                <div>
+                  <span className="text-gray-400 block text-[10px]">Payment Method</span>
+                  <span className="font-bold text-gray-900">{selectedOrder.paymentMethod || 'Razorpay'}</span>
+                </div>
+                <div>
+                  <span className="text-gray-400 block text-[10px]">Payment Status</span>
+                  <span className={`inline-block font-extrabold text-[10px] px-2 py-0.5 rounded ${
+                    selectedOrder.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                  }`}>
+                    {selectedOrder.paymentStatus || 'Pending'}
+                  </span>
+                </div>
+                {selectedOrder.paymentId && (
+                  <div className="col-span-2">
+                    <span className="text-gray-400 block text-[10px]">Razorpay Payment ID</span>
+                    <span className="font-mono font-bold text-gray-900 bg-white border border-gray-200 px-2 py-1 rounded inline-block">
+                      {selectedOrder.paymentId}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">

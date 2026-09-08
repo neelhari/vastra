@@ -225,6 +225,9 @@ create table if not exists orders (
   created_at timestamptz not null default now()
 );
 
+-- Optional column for Razorpay payment reference ID
+alter table orders add column if not exists payment_id text;
+
 create index if not exists idx_orders_created_at on orders(created_at desc);
 create index if not exists idx_orders_status on orders(status);
 

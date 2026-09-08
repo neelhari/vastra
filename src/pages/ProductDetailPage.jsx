@@ -61,6 +61,10 @@ export default function ProductDetailPage() {
 
   const isLiked = isInWishlist(product.id);
   const categoryMeta = categories.find((c) => c.id === product.category);
+  const isSaree =
+    product.category?.toLowerCase() === 'sarees' ||
+    product.category?.toLowerCase().includes('saree') ||
+    product.name?.toLowerCase().includes('saree');
 
   // Build Media Items (Photos + Video)
   const rawImages = product.images && product.images.length > 0 ? product.images : [product.image];
@@ -100,11 +104,11 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = () => {
-    addToCart(product, quantity, selectedSize);
+    addToCart(product, quantity, isSaree ? null : selectedSize);
   };
 
   const handleBuyNow = () => {
-    addToCart(product, quantity, selectedSize);
+    addToCart(product, quantity, isSaree ? null : selectedSize);
     if (!isAuthenticated) {
       navigate('/login?redirect=/checkout');
     } else {
@@ -305,8 +309,8 @@ export default function ProductDetailPage() {
               </a>
             )}
 
-            {/* Sizes Selection */}
-            {product.sizes && product.sizes.length > 0 && (
+            {/* Sizes Selection — strictly for non-saree stitched garments */}
+            {!isSaree && product.sizes && product.sizes.length > 0 && (
               <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-gray-900">Select Size</span>
