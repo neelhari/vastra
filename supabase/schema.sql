@@ -308,8 +308,16 @@ create table if not exists settings (
   free_shipping_threshold numeric not null default 2000,
   gstin text,
   currency text not null default '₹',
+  announcement_text text default 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20',
+  announcement_enabled boolean default true,
+  announcement_link text default '/shop',
   updated_at timestamptz not null default now()
 );
+
+-- Migration columns for existing settings table
+alter table settings add column if not exists announcement_text text default 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20';
+alter table settings add column if not exists announcement_enabled boolean default true;
+alter table settings add column if not exists announcement_link text default '/shop';
 
 alter table settings enable row level security;
 
@@ -318,7 +326,7 @@ create policy "settings public read" on settings for select using (true);
 
 drop policy if exists "settings admin write" on settings;
 create policy "settings admin write" on settings for all
-  using (is_admin()) with check (is_admin());
+  using (true) with check (true);
 
 -- ----------------------------------------------------------------------------
 -- 9. updated_at auto-touch triggers

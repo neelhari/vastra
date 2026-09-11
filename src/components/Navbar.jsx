@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
 import { useAuth } from '../context/AuthContext';
+import { useStoreData } from '../context/StoreDataContext';
 import { BRAND, waLink } from '../config/brand';
 
 const navLinks = [
@@ -24,6 +25,7 @@ export default function Navbar() {
   const { wishlistCount, setIsWishlistOpen } = useWishlist();
   const { setIsSearchOpen } = useUI();
   const { user, isAuthenticated, openLoginModal } = useAuth();
+  const { settings } = useStoreData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,31 +39,41 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-100 font-sans">
       {/* Top Announcement Bar */}
-      <div className="bg-[#6B1518] text-white text-[11px] sm:text-xs py-1.5 px-3 border-b border-[#4B0F11]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 font-medium tracking-wide truncate">
-            <span className="hidden sm:inline-block bg-[#D3923A] text-[#6B1518] text-[9px] uppercase font-bold px-1.5 py-0.5 rounded shrink-0">Special Offer</span>
-            <span className="truncate">🚚 FREE SHIPPING on orders above ₹{BRAND.freeShippingThreshold.toLocaleString('en-IN')}</span>
-          </div>
+      {(settings?.announcementEnabled !== false) && (
+        <div className="bg-[#6B1518] text-white text-[11px] sm:text-xs py-1.5 px-3 border-b border-[#4B0F11]">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 font-medium tracking-wide truncate">
+              <span className="hidden sm:inline-block bg-[#D3923A] text-[#6B1518] text-[9px] uppercase font-bold px-1.5 py-0.5 rounded shrink-0">Announcement</span>
+              {settings?.announcementLink ? (
+                <a href={settings.announcementLink} className="truncate hover:underline hover:text-[#FAF5EE] transition-colors">
+                  {settings.announcementText || `✨ FREE SHIPPING on orders above ₹${(settings?.freeShippingThreshold || BRAND.freeShippingThreshold).toLocaleString('en-IN')}`}
+                </a>
+              ) : (
+                <span className="truncate">
+                  {settings?.announcementText || `✨ FREE SHIPPING on orders above ₹${(settings?.freeShippingThreshold || BRAND.freeShippingThreshold).toLocaleString('en-IN')}`}
+                </span>
+              )}
+            </div>
 
-          <div className="flex items-center gap-2.5 text-gray-200 text-[11px] shrink-0">
-            <a href={`tel:${BRAND.phone}`} className="hover:text-[#D3923A] transition-colors flex items-center gap-1">
-              <Phone className="w-3 h-3 text-[#D3923A]" />
-              <span className="hidden sm:inline">+91 {BRAND.phone}</span>
-            </a>
-            <span className="hidden sm:inline text-[#831A1D]">|</span>
-            <div className="hidden sm:flex items-center gap-2">
-              <span>Follow us:</span>
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-[#D3923A] transition-colors" title="Instagram">
-                <InstagramIcon className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2.5 text-gray-200 text-[11px] shrink-0">
+              <a href={`tel:${settings?.phone || BRAND.phone}`} className="hover:text-[#D3923A] transition-colors flex items-center gap-1">
+                <Phone className="w-3 h-3 text-[#D3923A]" />
+                <span className="hidden sm:inline">+91 {settings?.phone || BRAND.phone}</span>
               </a>
-              <a href={waLink(`Hello ${BRAND.name}, I have an inquiry.`)} target="_blank" rel="noreferrer" className="hover:text-[#D3923A] transition-colors" title="WhatsApp">
-                <MessageCircle className="w-3.5 h-3.5" />
-              </a>
+              <span className="hidden sm:inline text-[#831A1D]">|</span>
+              <div className="hidden sm:flex items-center gap-2">
+                <span>Follow us:</span>
+                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-[#D3923A] transition-colors" title="Instagram">
+                  <InstagramIcon className="w-3.5 h-3.5" />
+                </a>
+                <a href={waLink(`Hello ${settings?.storeName || BRAND.name}, I have an inquiry.`)} target="_blank" rel="noreferrer" className="hover:text-[#D3923A] transition-colors" title="WhatsApp">
+                  <MessageCircle className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Header / Brand Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 xl:py-3">

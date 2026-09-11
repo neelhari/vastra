@@ -21,6 +21,9 @@ export function StoreDataProvider({ children }) {
   const [settings, setSettings] = useState({
     storeName: '', phone: '', email: '', whatsapp: '', ownerName: '',
     address: '', freeShippingThreshold: 2000, gstin: '', currency: '₹',
+    announcementText: 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20',
+    announcementEnabled: true,
+    announcementLink: '/shop',
   });
   const [loading, setLoading] = useState(true);
 
