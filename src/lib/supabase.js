@@ -311,7 +311,7 @@ function mapOrderToDb(o) {
   }
 
   return {
-    id: o.id,
+    id: o.id || `AV-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`,
     customer_name: o.customerName,
     customer_phone: o.customerPhone,
     customer_email: o.customerEmail || null,
