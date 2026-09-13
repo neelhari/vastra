@@ -2,9 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { Settings, Save, CheckCircle2, ShieldCheck, MapPin, Phone, Mail, DollarSign, Megaphone, ExternalLink } from 'lucide-react';
 import { useStoreData } from '../../context/StoreDataContext';
 
+const parseLines = (s) => {
+  if (Array.isArray(s?.announcementLines)) {
+    return [
+      s.announcementLines[0] || '',
+      s.announcementLines[1] || '',
+      s.announcementLines[2] || '',
+      s.announcementLines[3] || '',
+    ];
+  }
+  if (s?.announcementText) {
+    try {
+      const parsed = JSON.parse(s.announcementText);
+      if (Array.isArray(parsed)) {
+        return [parsed[0] || '', parsed[1] || '', parsed[2] || '', parsed[3] || ''];
+      }
+    } catch {}
+    return [s.announcementText, '', '', ''];
+  }
+  return ['', '', '', ''];
+};
+
 export default function AdminSettings() {
   const { settings, updateSettings } = useStoreData();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     storeName: '',
     phone: '',
     whatsapp: '',
@@ -13,11 +34,13 @@ export default function AdminSettings() {
     address: '',
     freeShippingThreshold: 2000,
     currency: '₹',
-    announcementText: 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20',
-    announcementEnabled: true,
-    announcementLink: '/shop',
+    announcementLines: parseLines(settings),
+    announcementText: settings?.announcementText || '',
+    announcementEnabled: settings?.announcementEnabled !== false,
+    announcementLink: settings?.announcementLink || '/shop',
     ...settings,
-  });
+    announcementLines: parseLines(settings),
+  }));
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -27,6 +50,7 @@ export default function AdminSettings() {
       setFormData((prev) => ({
         ...prev,
         ...settings,
+        announcementLines: parseLines(settings),
         announcementText: settings.announcementText ?? prev.announcementText,
         announcementEnabled: settings.announcementEnabled !== undefined ? settings.announcementEnabled : prev.announcementEnabled,
         announcementLink: settings.announcementLink ?? prev.announcementLink,
@@ -34,15 +58,35 @@ export default function AdminSettings() {
     }
   }, [settings]);
 
+  const handleLineChange = (index, value) => {
+    setFormData((prev) => {
+      const currentLines = Array.isArray(prev.announcementLines)
+        ? [...prev.announcementLines]
+        : ['', '', '', ''];
+      while (currentLines.length < 4) currentLines.push('');
+      currentLines[index] = value;
+      return {
+        ...prev,
+        announcementLines: currentLines,
+        announcementText: currentLines.filter(Boolean).join(' • '),
+      };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setError('');
     
-    // Ensure whatsapp defaults to phone if empty
+    const lines = Array.isArray(formData.announcementLines)
+      ? formData.announcementLines.slice(0, 4)
+      : ['', '', '', ''];
+
     const payload = {
       ...formData,
       whatsapp: formData.whatsapp || formData.phone,
+      announcementLines: lines,
+      announcementText: lines.filter(Boolean).join(' • '),
     };
 
     const result = await updateSettings(payload);
@@ -55,6 +99,8 @@ export default function AdminSettings() {
     setSaved(true);
     setTimeout(() => setSaved(false), 3500);
   };
+
+  const previewLines = (formData.announcementLines || []).map((l) => (l || '').trim()).filter(Boolean);
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -86,7 +132,7 @@ export default function AdminSettings() {
                 <h3 className="font-serif text-lg font-bold text-[#6B1518]">
                   1. Top Announcement Bar
                 </h3>
-                <p className="text-[11px] text-gray-500">Notice bar shown at the very top of all store pages</p>
+                <p className="text-[11px] text-gray-500">Configure 4 distinct lines. Only the lines you enter here will scroll continuously across the top of the store.</p>
               </div>
             </div>
             
@@ -104,16 +150,31 @@ export default function AdminSettings() {
             </label>
           </div>
 
-          <div className="space-y-3">
-            <div>
-              <label className="block font-bold text-gray-800 mb-1">Announcement Message Text</label>
-              <input
-                type="text"
-                placeholder="e.g. ✨ FESTIVE SALE: Flat 20% OFF on all Pure Silk Sarees! Use Code: AV20"
-                value={formData.announcementText || ''}
-                onChange={(e) => setFormData({ ...formData, announcementText: e.target.value })}
-                className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6B1518] focus:ring-1 focus:ring-[#6B1518] outline-none"
-              />
+          <div className="space-y-4">
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 text-xs text-amber-900">
+              <span className="font-bold">Marquee Bar Lines:</span> Add your announcement lines below. Each field acts as a line in the bar. <strong>Only</strong> the lines you add will appear and scroll.
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { label: 'Announcement Line 1', placeholder: 'e.g. ✨ Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20' },
+                { label: 'Announcement Line 2', placeholder: 'e.g. 🚚 Free Express Delivery Across India on Orders Above ₹2,000' },
+                { label: 'Announcement Line 3', placeholder: 'e.g. 🎁 Complimentary Handcrafted Gift Box on Every Purchase' },
+                { label: 'Announcement Line 4', placeholder: 'e.g. 🥻 Exclusive New Kanjeevaram & Banarasi Silk Sarees Available' },
+              ].map((field, index) => (
+                <div key={index} className="space-y-1">
+                  <label className="block text-xs font-bold text-gray-800">
+                    {field.label} {index === 0 ? <span className="text-[#6B1518]">*</span> : <span className="text-gray-400 font-normal">(Optional)</span>}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={field.placeholder}
+                    value={formData.announcementLines?.[index] ?? ''}
+                    onChange={(e) => handleLineChange(index, e.target.value)}
+                    className="w-full p-3 text-xs rounded-xl border border-gray-200 focus:border-[#6B1518] focus:ring-1 focus:ring-[#6B1518] outline-none"
+                  />
+                </div>
+              ))}
             </div>
 
             <div>
@@ -129,34 +190,34 @@ export default function AdminSettings() {
 
             {/* Live Preview Box */}
             <div className="mt-3 bg-gray-50 p-3 rounded-2xl border border-gray-100">
-              <span className="block text-[10px] font-extrabold uppercase text-gray-400 mb-1.5 tracking-wider">
-                Live Storefront Header Preview (Continuous Marquee Scroll):
-              </span>
-              <div className="bg-[#6B1518] text-white text-xs py-2 px-3 rounded-xl overflow-hidden whitespace-nowrap shadow-xs relative">
-                <div className="flex items-center w-max animate-marquee">
-                  {[0, 1].map((i) => (
-                    <div key={i} className="flex items-center shrink-0">
-                      <span className="mx-4 inline-flex items-center gap-1.5 font-medium">
-                        <span className="bg-[#D3923A] text-[#6B1518] text-[9px] uppercase font-black px-1.5 py-0.5 rounded shrink-0">
-                          Announcement
-                        </span>
-                        <span>
-                          {formData.announcementText || 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20'}
-                        </span>
-                        <span className="text-[#D3923A] ml-3 text-xs">✦</span>
-                      </span>
-                      <span className="mx-4 inline-flex items-center gap-1.5 text-gray-200">
-                        <span>100% Authentic Handloom Silk &amp; Craft</span>
-                        <span className="text-[#D3923A] ml-3 text-xs">✦</span>
-                      </span>
-                      <span className="mx-4 inline-flex items-center gap-1.5 text-gray-200">
-                        <span>Free Express Delivery Across India</span>
-                        <span className="text-[#D3923A] ml-3 text-xs">✦</span>
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="block text-[10px] font-extrabold uppercase text-gray-400 tracking-wider">
+                  Live Storefront Header Preview (Continuous Marquee Scroll):
+                </span>
+                <span className="text-[10px] text-gray-500 font-semibold">
+                  {previewLines.length} active {previewLines.length === 1 ? 'line' : 'lines'} scrolling
+                </span>
               </div>
+              {previewLines.length > 0 ? (
+                <div className="bg-[#6B1518] text-white text-xs py-2 px-3 rounded-xl overflow-hidden whitespace-nowrap shadow-xs relative">
+                  <div className="flex items-center w-max animate-marquee">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center shrink-0">
+                        {previewLines.map((line, idx) => (
+                          <span key={idx} className="mx-6 inline-flex items-center gap-2 font-medium tracking-wide">
+                            <span>{line}</span>
+                            <span className="text-[#D3923A] ml-4 text-xs select-none">✦</span>
+                          </span>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-amber-50 text-amber-800 text-xs py-2 px-3 rounded-xl border border-amber-200">
+                  No announcement lines added yet. Enter at least one line above to show the scrolling announcement bar.
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -26,6 +26,28 @@ export function StoreDataProvider({ children }) {
     } catch (e) {
       // ignore
     }
+
+    let defaultLines = ['Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20', '', '', ''];
+    if (Array.isArray(localSaved?.announcementLines)) {
+      defaultLines = [
+        localSaved.announcementLines[0] || '',
+        localSaved.announcementLines[1] || '',
+        localSaved.announcementLines[2] || '',
+        localSaved.announcementLines[3] || '',
+      ];
+    } else if (localSaved?.announcementText) {
+      try {
+        const parsed = JSON.parse(localSaved.announcementText);
+        if (Array.isArray(parsed)) {
+          defaultLines = [parsed[0] || '', parsed[1] || '', parsed[2] || '', parsed[3] || ''];
+        } else {
+          defaultLines = [localSaved.announcementText, '', '', ''];
+        }
+      } catch {
+        defaultLines = [localSaved.announcementText, '', '', ''];
+      }
+    }
+
     return {
       storeName: 'Aalaya Vastra',
       phone: '6301646462',
@@ -35,11 +57,12 @@ export function StoreDataProvider({ children }) {
       address: 'Rajahmundry, Andhra Pradesh',
       freeShippingThreshold: 2000,
       currency: '₹',
-      announcementText: 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20',
+      announcementLines: defaultLines,
+      announcementText: defaultLines.filter(Boolean).join(' • '),
       announcementEnabled: true,
       announcementLink: '/shop',
       ...(localSaved || {}),
-
+      announcementLines: defaultLines,
     };
   });
   const [loading, setLoading] = useState(true);

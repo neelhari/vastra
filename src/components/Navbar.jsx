@@ -35,35 +35,33 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   };
 
+  const activeAnnouncementLines = (() => {
+    const raw = Array.isArray(settings?.announcementLines)
+      ? settings.announcementLines
+      : (settings?.announcementText ? [settings.announcementText] : []);
+    return raw
+      .map((l) => (typeof l === 'string' ? l.trim() : ''))
+      .filter((l) => l.length > 0);
+  })();
+
   return (
     <header className="relative md:sticky md:top-0 z-40 bg-white shadow-sm border-b border-gray-100 font-sans">
       {/* Top Continuous Marquee Scrolling Announcement Bar */}
-      {(settings?.announcementEnabled !== false) && (
+      {settings?.announcementEnabled !== false && activeAnnouncementLines.length > 0 && (
         <div className="bg-[#6B1518] text-white text-[11px] sm:text-xs py-2 border-b border-[#4B0F11] overflow-hidden whitespace-nowrap select-none">
           <Link
             to={settings?.announcementLink || '/shop'}
             className="flex items-center w-max animate-marquee hover:[animation-play-state:paused] cursor-pointer"
             title="Click to view offers"
           >
-            {[0, 1, 2, 3].map((idx) => (
-              <div key={idx} className="flex items-center shrink-0">
-                <span className="mx-6 sm:mx-10 inline-flex items-center gap-2 font-medium tracking-wide">
-                  <span className="bg-[#D3923A] text-[#6B1518] text-[9px] uppercase font-black px-1.5 py-0.5 rounded shrink-0 shadow-2xs">
-                    Announcement
+            {[0, 1, 2, 3].map((loopIdx) => (
+              <div key={loopIdx} className="flex items-center shrink-0">
+                {activeAnnouncementLines.map((line, idx) => (
+                  <span key={idx} className="mx-6 sm:mx-10 inline-flex items-center gap-2 font-medium tracking-wide">
+                    <span>{line}</span>
+                    <span className="text-[#D3923A] ml-4 text-xs select-none">✦</span>
                   </span>
-                  <span>
-                    {settings?.announcementText || 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20'}
-                  </span>
-                  <span className="text-[#D3923A] ml-4 text-xs">✦</span>
-                </span>
-                <span className="mx-6 sm:mx-10 inline-flex items-center gap-2 font-medium text-gray-200">
-                  <span>100% Authentic Handloom Silk &amp; Craft</span>
-                  <span className="text-[#D3923A] ml-4 text-xs">✦</span>
-                </span>
-                <span className="mx-6 sm:mx-10 inline-flex items-center gap-2 font-medium text-gray-200">
-                  <span>Free Express Delivery on Orders ₹{(settings?.freeShippingThreshold || BRAND.freeShippingThreshold).toLocaleString('en-IN')}+</span>
-                  <span className="text-[#D3923A] ml-4 text-xs">✦</span>
-                </span>
+                ))}
               </div>
             ))}
           </Link>

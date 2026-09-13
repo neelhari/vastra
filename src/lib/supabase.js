@@ -331,8 +331,38 @@ function mapOrderToDb(o) {
   };
 }
 
+function parseAnnouncementLines(rawText) {
+  let lines = ['', '', '', ''];
+  if (!rawText) return lines;
+  try {
+    const parsed = JSON.parse(rawText);
+    if (Array.isArray(parsed)) {
+      return [
+        parsed[0] || '',
+        parsed[1] || '',
+        parsed[2] || '',
+        parsed[3] || '',
+      ];
+    }
+    if (typeof parsed === 'string') {
+      return [parsed, '', '', ''];
+    }
+  } catch {
+    if (rawText.includes('\n')) {
+      const parts = rawText.split('\n').map((s) => s.trim()).filter(Boolean);
+      return [parts[0] || '', parts[1] || '', parts[2] || '', parts[3] || ''];
+    }
+    return [rawText, '', '', ''];
+  }
+  return lines;
+}
+
 function mapSettingsFromDb(row) {
   if (!row) return null;
+  const lines = parseAnnouncementLines(row.announcement_text);
+  if (!lines.some(Boolean) && !row.announcement_text) {
+    lines[0] = 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20';
+  }
   return {
     storeName: row.store_name || '',
     phone: row.phone || '',
@@ -343,7 +373,8 @@ function mapSettingsFromDb(row) {
     freeShippingThreshold: Number(row.free_shipping_threshold) || 0,
     gstin: row.gstin || '',
     currency: row.currency || '₹',
-    announcementText: row.announcement_text ?? 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20',
+    announcementLines: lines,
+    announcementText: lines.filter(Boolean).join(' • '),
     announcementEnabled: row.announcement_enabled !== undefined ? Boolean(row.announcement_enabled) : true,
     announcementLink: row.announcement_link || '/shop',
   };
@@ -360,7 +391,12 @@ function mapSettingsToDb(s) {
   if (s.freeShippingThreshold !== undefined) row.free_shipping_threshold = s.freeShippingThreshold;
   if (s.gstin !== undefined) row.gstin = s.gstin;
   if (s.currency !== undefined) row.currency = s.currency;
-  if (s.announcementText !== undefined) row.announcement_text = s.announcementText;
+  if (s.announcementLines !== undefined) {
+    const clean = Array.isArray(s.announcementLines) ? s.announcementLines.slice(0, 4) : [];
+    row.announcement_text = JSON.stringify(clean);
+  } else if (s.announcementText !== undefined) {
+    row.announcement_text = s.announcementText;
+  }
   if (s.announcementEnabled !== undefined) row.announcement_enabled = s.announcementEnabled;
   if (s.announcementLink !== undefined) row.announcement_link = s.announcementLink;
   return row;
