@@ -208,13 +208,22 @@ export default function ResetPasswordPage() {
                 </p>
               </div>
 
-              <button
-                onClick={() => navigate('/login')}
-                className="w-full bg-[#6B1518] hover:bg-[#4B0F11] text-white font-bold text-sm sm:text-base py-4 rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <span>PROCEED TO LOGIN</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  onClick={() => navigate('/admin/login')}
+                  className="flex-1 bg-[#6B1518] hover:bg-[#4B0F11] text-white font-bold text-xs sm:text-sm py-3.5 rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>ADMIN SIGN IN</span>
+                </button>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs sm:text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <span>CUSTOMER LOGIN</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
 

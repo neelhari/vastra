@@ -53,7 +53,7 @@ export function AdminAuthProvider({ children }) {
       }
 
       if (sess?.user) {
-        const admin = await isUserAdmin(sess.user.id);
+        const admin = await isUserAdmin(sess.user.id, sess.user.email);
         if (admin) {
           setSession(sess);
           if (active) setIsAdmin(true);
@@ -97,7 +97,7 @@ export function AdminAuthProvider({ children }) {
     const res = await signInAdmin(cleanEmail, cleanPassword);
     if (res.success && res.data?.session) {
       setSession(res.data.session);
-      const admin = await isUserAdmin(res.data.session.user.id);
+      const admin = await isUserAdmin(res.data.session.user.id, res.data.session.user.email);
       setIsAdmin(admin);
       return res;
     }

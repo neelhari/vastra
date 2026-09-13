@@ -37,11 +37,22 @@ export async function signOutAdmin() {
   await supabase.auth.signOut();
 }
 
-export async function isUserAdmin(userId) {
-  if (!supabase || !userId) return false;
-  const { data, error } = await supabase.from('admin_users').select('id').eq('id', userId).maybeSingle();
-  if (error) return false;
-  return !!data;
+export async function isUserAdmin(userId, userEmail = null) {
+  if (!supabase) return false;
+  try {
+    if (userId) {
+      const { data } = await supabase.from('admin_users').select('id').eq('id', userId).maybeSingle();
+      if (data) return true;
+    }
+    if (userEmail) {
+      const cleanEmail = userEmail.trim().toLowerCase();
+      const { data } = await supabase.from('admin_users').select('id, email').ilike('email', cleanEmail).maybeSingle();
+      if (data) return true;
+    }
+  } catch (err) {
+    console.warn('isUserAdmin check error:', err);
+  }
+  return false;
 }
 
 export async function signUpCustomer({ email, password, name, phone }) {
