@@ -32,7 +32,7 @@ export default function ProductCard({ product }) {
     const defaultColor = product.colors && product.colors.length > 0 ? product.colors[0].name : '';
     const defaultSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : '';
     buyNow(product, 1, defaultColor, defaultSize);
-    navigate('/checkout');
+    navigate('/checkout', { state: { from: `/product/${product.id}` } });
   };
 
   return (

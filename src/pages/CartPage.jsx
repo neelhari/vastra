@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingBag, Trash2, ArrowRight, Truck, Check, ShieldCheck, ArrowLeft, MessageCircle, Sparkles, Tag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +7,7 @@ import { BRAND, waLink } from '../config/brand';
 
 export default function CartPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated, openLoginModal } = useAuth();
   const {
     cartItems,
@@ -61,15 +62,23 @@ export default function CartPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
-      {/* Clean Top Navigation Bar with Back Button (Replacing clunky breadcrumb & duplicate continue shopping) */}
+      {/* Clean Top Navigation Bar with Back Button */}
       <div className="flex items-center justify-between pb-3 border-b border-gray-100">
         <button
           type="button"
-          onClick={() => navigate('/shop')}
+          onClick={() => {
+            if (location.state?.from && location.state.from !== '/cart') {
+              navigate(location.state.from);
+            } else if (cartItems.length > 0 && cartItems[0]?.id) {
+              navigate(`/product/${cartItems[0].id}`);
+            } else {
+              navigate('/shop');
+            }
+          }}
           className="inline-flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-[#6B1518] py-1.5 px-3 rounded-xl hover:bg-gray-100 transition-colors -ml-3 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 text-gray-500" />
-          <span>Continue Shopping</span>
+          <span>{cartItems.length > 0 ? 'Back to Product' : 'Continue Shopping'}</span>
         </button>
 
         <div className="text-xs font-bold text-gray-900">
@@ -290,11 +299,8 @@ export default function CartPage() {
               <div className="space-y-3 pt-2">
                 <button
                   onClick={() => {
-                    if (!isAuthenticated) {
-                      navigate('/login?redirect=/checkout');
-                    } else {
-                      navigate('/checkout');
-                    }
+                    const origin = location.state?.from || (cartItems[0]?.id ? `/product/${cartItems[0].id}` : '/cart');
+                    navigate('/checkout', { state: { from: origin } });
                   }}
                   className="w-full bg-[#6B1518] hover:bg-[#4B0F11] text-white py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all transform hover:scale-[1.01]"
                 >

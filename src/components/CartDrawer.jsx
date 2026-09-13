@@ -274,11 +274,8 @@ export default function CartDrawer() {
                 <button
                   onClick={() => {
                     setIsCartOpen(false);
-                    if (!isAuthenticated) {
-                      openLoginModal('/checkout');
-                    } else {
-                      navigate('/checkout');
-                    }
+                    const origin = location.pathname.startsWith('/product/') ? location.pathname : (cartItems[0]?.id ? `/product/${cartItems[0].id}` : '/shop');
+                    navigate('/checkout', { state: { from: origin } });
                   }}
                   className="w-full bg-[#6B1518] hover:bg-[#4B0F11] text-white py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-colors"
                 >

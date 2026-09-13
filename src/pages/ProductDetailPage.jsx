@@ -241,11 +241,11 @@ export default function ProductDetailPage() {
   };
 
   // Buy Now: Sets exact quantity in cart to avoid the 1 -> 2, 2 -> 4 jumping bug,
-  // and navigates directly to checkout as requested by user.
+  // and navigates directly to checkout with origin state remembered.
   const handleBuyNow = () => {
     if (isOutOfStock) return;
     buyNow(product, quantity, null, isSaree ? null : selectedSize);
-    navigate('/checkout');
+    navigate('/checkout', { state: { from: `/product/${product.id}` } });
   };
 
 
