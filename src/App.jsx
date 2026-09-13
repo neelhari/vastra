@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Outlet, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -67,7 +67,20 @@ function ScrollAndAosReset() {
 function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
   const isAdminRoute = location.pathname.startsWith('/admin');
+
+  useEffect(() => {
+    // If user clicked an email invite or recovery link, route directly to password setup
+    const hash = window.location.hash || '';
+    if (
+      (hash.includes('type=recovery') || hash.includes('type=invite') || hash.includes('access_token')) &&
+      !location.pathname.startsWith('/reset-password') &&
+      !location.pathname.startsWith('/admin')
+    ) {
+      navigate(`/reset-password${hash}`, { replace: true });
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     AOS.init({
