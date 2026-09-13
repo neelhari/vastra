@@ -105,7 +105,7 @@ export function AdminAuthProvider({ children }) {
     // 2. Offline / local fallback if Supabase auth is unreachable
     if (
       (cleanEmail === 'aalayavastra2026@gmail.com' || cleanEmail === 'admin@aalayavastra.com' || cleanEmail === 'harini@aalayavastra.com') &&
-      cleanPassword === 'admin123'
+      (cleanPassword === 'Aalayavastra@2026' || cleanPassword === 'admin123')
     ) {
       const mockAdminSession = {
         user: {
