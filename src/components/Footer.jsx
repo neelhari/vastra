@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Phone, Mail, MessageCircle, Heart, ArrowUp } from 'lucide-react';
+import { Phone, Mail, MessageCircle, Heart, ArrowUp, MapPin } from 'lucide-react';
 import { InstagramIcon, FacebookIcon } from './BrandIcons';
 import { BRAND, waLink } from '../config/brand';
+import { useStoreData } from '../context/StoreDataContext';
 
 const quickLinks = [
   { label: 'Home', path: '/' },
@@ -25,6 +26,16 @@ const policyLinks = [
 
 export default function Footer() {
   const navigate = useNavigate();
+  const { settings } = useStoreData();
+
+  // Dynamic store configuration with fallbacks
+  const storeName = settings?.storeName || BRAND.name;
+  const storePhone = settings?.phone || BRAND.phone;
+  const storeWhatsApp = settings?.whatsapp || settings?.phone || BRAND.phone;
+  const storeEmail = settings?.email || BRAND.email;
+  const storeOwner = settings?.ownerName || BRAND.ownerFullName;
+  const storeAddress = settings?.address || BRAND.address.full;
+
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -47,11 +58,11 @@ export default function Footer() {
               className="flex items-center gap-3 cursor-pointer group"
             >
               <div className="h-12 w-12 rounded-full bg-[#FAF5EE] ring-2 ring-[#D3923A]/60 shadow-md flex items-center justify-center shrink-0 overflow-hidden group-hover:scale-105 transition-transform p-0.5">
-                <img src="/logo-icon.png" alt={BRAND.name} className="h-full w-full object-contain" />
+                <img src="/logo-icon.png" alt={storeName} className="h-full w-full object-contain" />
               </div>
               <div>
                 <div className="font-serif font-bold text-xl sm:text-2xl text-white tracking-wide group-hover:text-[#D3923A] transition-colors">
-                  {BRAND.name}
+                  {storeName}
                 </div>
                 <div className="text-[10px] uppercase tracking-[0.18em] text-[#D3923A] font-semibold">
                   {BRAND.tagline}
@@ -59,7 +70,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-              Bringing you timeless sarees, womenswear, and fine fabrics crafted with tradition, quality, and affordability. Owned with pride by <span className="text-[#D3923A] font-semibold">{BRAND.ownerFullName}</span>.
+              Bringing you timeless sarees, womenswear, and fine fabrics crafted with tradition, quality, and affordability. Owned with pride by <span className="text-[#D3923A] font-semibold">{storeOwner}</span>.
             </p>
             <div className="flex items-center gap-3 pt-2">
               <a href="https://instagram.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-[#4B0F11] flex items-center justify-center text-gray-300 hover:text-white hover:bg-[#6B1518] transition-colors">
@@ -68,7 +79,7 @@ export default function Footer() {
               <a href="https://facebook.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-[#4B0F11] flex items-center justify-center text-gray-300 hover:text-white hover:bg-[#6B1518] transition-colors">
                 <FacebookIcon className="w-4 h-4" />
               </a>
-              <a href={waLink(`Hello ${BRAND.name}, I have an inquiry.`)} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-[#4B0F11] flex items-center justify-center text-gray-300 hover:text-white hover:bg-[#25D366] transition-colors">
+              <a href={waLink(`Hello ${storeName}, I have an inquiry.`, storeWhatsApp)} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-[#4B0F11] flex items-center justify-center text-gray-300 hover:text-white hover:bg-[#25D366] transition-colors">
                 <MessageCircle className="w-4 h-4" />
               </a>
             </div>
@@ -84,7 +95,7 @@ export default function Footer() {
                 <li key={item.path}>
                   <button
                     onClick={() => handleNav(item.path)}
-                    className="text-gray-300 hover:text-[#D3923A] transition-colors flex items-center gap-1.5"
+                    className="text-gray-300 hover:text-[#D3923A] transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <span className="text-[#D3923A]">›</span> {item.label}
                   </button>
@@ -103,7 +114,7 @@ export default function Footer() {
                 <li key={policy.path}>
                   <button
                     onClick={() => handleNav(policy.path)}
-                    className="text-gray-300 hover:text-[#D3923A] transition-colors flex items-center gap-1.5"
+                    className="text-gray-300 hover:text-[#D3923A] transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <span className="text-[#D3923A]">›</span> {policy.label}
                   </button>
@@ -120,25 +131,33 @@ export default function Footer() {
             <div className="space-y-3 text-xs sm:text-sm text-gray-300">
               <p className="flex items-start gap-2.5">
                 <Phone className="w-4 h-4 text-[#D3923A] shrink-0 mt-0.5" />
-                <a href={`tel:${BRAND.phone}`} className="hover:text-white transition-colors">
-                  +91 {BRAND.phone}
+                <a href={`tel:${storePhone}`} className="hover:text-white transition-colors">
+                  +91 {storePhone}
                 </a>
               </p>
               <p className="flex items-start gap-2.5">
                 <MessageCircle className="w-4 h-4 text-[#25D366] shrink-0 mt-0.5" />
-                <a href={waLink(`Hello ${BRAND.name}, I have an inquiry.`)} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
-                  +91 {BRAND.phone} (WhatsApp)
+                <a href={waLink(`Hello ${storeName}, I have an inquiry.`, storeWhatsApp)} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                  +91 {storeWhatsApp} (WhatsApp)
                 </a>
               </p>
               <p className="flex items-start gap-2.5">
                 <Mail className="w-4 h-4 text-[#D3923A] shrink-0 mt-0.5" />
-                <a href={`mailto:${BRAND.email}`} className="hover:text-white transition-colors break-all">
-                  {BRAND.email}
+                <a href={`mailto:${storeEmail}`} className="hover:text-white transition-colors break-all">
+                  {storeEmail}
                 </a>
               </p>
-              <div className="pt-2 text-xs text-gray-400 border-t border-[#4B0F11] mt-3">
-                <span>Owner: </span>
-                <span className="text-white font-medium">{BRAND.ownerFullName}</span>
+              <div className="pt-2 text-xs text-gray-400 border-t border-[#4B0F11] mt-3 space-y-1.5">
+                <div>
+                  <span>Owner: </span>
+                  <span className="text-white font-medium">{storeOwner}</span>
+                </div>
+                {storeAddress && (
+                  <div className="flex items-start gap-1.5 text-[11px] text-gray-400 pt-0.5">
+                    <MapPin className="w-3 h-3 text-[#D3923A] shrink-0 mt-0.5" />
+                    <span>{storeAddress}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

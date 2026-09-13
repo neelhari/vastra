@@ -12,7 +12,6 @@ export default function AdminSettings() {
     ownerName: '',
     address: '',
     freeShippingThreshold: 2000,
-    gstin: '',
     currency: '₹',
     announcementText: 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20',
     announcementEnabled: true,
@@ -61,7 +60,7 @@ export default function AdminSettings() {
     <div className="space-y-6 max-w-4xl">
       <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-2xs">
         <h2 className="font-serif text-2xl font-bold text-gray-900">Store Configuration & Announcement Settings</h2>
-        <p className="text-xs text-gray-500 mt-0.5">Manage store contact details, announcement bar, GSTIN, and shipping thresholds</p>
+        <p className="text-xs text-gray-500 mt-0.5">Manage store contact details, announcement bar, and shipping thresholds</p>
       </div>
 
       {saved && (
@@ -220,20 +219,10 @@ export default function AdminSettings() {
         {/* SECTION 3: FINANCIAL & SHIPPING */}
         <div className="space-y-4 pt-4 border-t border-gray-100">
           <h3 className="font-serif text-lg font-bold text-[#6B1518] border-b border-gray-100 pb-2">
-            3. Financial, GST & Shipping Policy
+            3. Currency & Shipping Policy
           </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block font-bold text-gray-800 mb-1">GSTIN Number</label>
-              <input
-                type="text"
-                value={formData.gstin || ''}
-                onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
-                className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#6B1518] font-mono outline-none"
-              />
-            </div>
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-bold text-gray-800 mb-1">Free Shipping Threshold (₹)</label>
               <input
@@ -255,6 +244,7 @@ export default function AdminSettings() {
             </div>
           </div>
         </div>
+
 
         <div className="pt-4 flex justify-end">
           <button

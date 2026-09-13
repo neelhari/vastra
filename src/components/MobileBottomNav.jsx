@@ -10,7 +10,11 @@ export default function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  if (location.pathname === '/checkout' || location.pathname === '/order-success') {
+  if (
+    location.pathname === '/checkout' ||
+    location.pathname === '/order-success' ||
+    location.pathname.startsWith('/product/')
+  ) {
     return null;
   }
 

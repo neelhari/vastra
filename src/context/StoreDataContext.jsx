@@ -18,12 +18,29 @@ export function StoreDataProvider({ children }) {
   const [coupons, setCoupons] = useState([]);
   const [orders, setOrders] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [settings, setSettings] = useState({
-    storeName: '', phone: '', email: '', whatsapp: '', ownerName: '',
-    address: '', freeShippingThreshold: 2000, gstin: '', currency: '₹',
-    announcementText: 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20',
-    announcementEnabled: true,
-    announcementLink: '/shop',
+  const [settings, setSettings] = useState(() => {
+    let localSaved = null;
+    try {
+      const raw = localStorage.getItem('aalaya_store_settings');
+      if (raw) localSaved = JSON.parse(raw);
+    } catch (e) {
+      // ignore
+    }
+    return {
+      storeName: 'Aalaya Vastra',
+      phone: '6301646462',
+      email: 'contact@aalayavastra.com',
+      whatsapp: '9999999999',
+      ownerName: 'Jupudi Harini',
+      address: 'Rajahmundry, Andhra Pradesh',
+      freeShippingThreshold: 2000,
+      currency: '₹',
+      announcementText: 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20',
+      announcementEnabled: true,
+      announcementLink: '/shop',
+      ...(localSaved || {}),
+
+    };
   });
   const [loading, setLoading] = useState(true);
 
@@ -76,6 +93,33 @@ export function StoreDataProvider({ children }) {
     const res = await deleteProductFromDb(id);
     if (res.success) setProducts((prev) => prev.filter((p) => p.id !== id));
     return res;
+  };
+
+  const batchUpdateStock = async (updatesMap) => {
+    const entries = Object.entries(updatesMap);
+    if (entries.length === 0) return { success: true, count: 0 };
+
+    try {
+      const promises = entries.map(([id, stock]) =>
+        updateProductInDb(id, { stock: Math.max(0, Number(stock) || 0) })
+      );
+      await Promise.all(promises);
+
+      // Immediately sync state locally across all components
+      setProducts((prev) =>
+        prev.map((p) => {
+          if (updatesMap[p.id] !== undefined) {
+            const newStock = Math.max(0, Number(updatesMap[p.id]) || 0);
+            return { ...p, stock: newStock, inStock: newStock > 0 };
+          }
+          return p;
+        })
+      );
+      return { success: true, count: entries.length };
+    } catch (err) {
+      console.error('Batch stock update error:', err);
+      return { success: false, message: err?.message || 'Error updating stock' };
+    }
   };
 
   // ---------------- Categories ----------------
@@ -191,6 +235,7 @@ export function StoreDataProvider({ children }) {
         refreshMessages,
         addProduct,
         updateProduct,
+        batchUpdateStock,
         deleteProduct,
         addCategory,
         updateCategory,

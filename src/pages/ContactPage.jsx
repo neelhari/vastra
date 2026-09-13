@@ -2,8 +2,18 @@ import React, { useState } from 'react';
 import { Phone, Mail, MessageCircle, MapPin, Send, CheckCircle2, User, HelpCircle, ChevronDown, AlertTriangle } from 'lucide-react';
 import { BRAND, waLink } from '../config/brand';
 import { saveContactMessageToSupabase } from '../lib/supabase';
+import { useStoreData } from '../context/StoreDataContext';
 
 export default function ContactPage() {
+  const { settings } = useStoreData();
+  const storeName = settings?.storeName || BRAND.name;
+  const storePhone = settings?.phone || BRAND.phone;
+  const storeWhatsApp = settings?.whatsapp || settings?.phone || BRAND.phone;
+  const storeEmail = settings?.email || BRAND.email;
+  const storeOwner = settings?.ownerName || BRAND.ownerFullName;
+  const storeAddress = settings?.address || BRAND.address.full;
+  const storeFreeShipping = settings?.freeShippingThreshold || BRAND.freeShippingThreshold;
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -50,25 +60,25 @@ export default function ContactPage() {
     {
       icon: <Phone className="w-6 h-6 text-[#6B1518]" />,
       title: "Phone Support",
-      detail: `+91 ${BRAND.phone}`,
+      detail: `+91 ${storePhone}`,
       subdetail: "Available 9:00 AM - 9:00 PM IST",
-      href: `tel:${BRAND.phone}`,
+      href: `tel:${storePhone}`,
       actionText: "Call Us Now"
     },
     {
       icon: <MessageCircle className="w-6 h-6 text-[#25D366]" />,
       title: "WhatsApp Chat",
-      detail: `+91 ${BRAND.phone}`,
+      detail: `+91 ${storeWhatsApp}`,
       subdetail: "Instant response for product inquiries",
-      href: waLink(`Hello ${BRAND.name}, I have an inquiry.`),
+      href: waLink(`Hello ${storeName}, I have an inquiry.`, storeWhatsApp),
       actionText: "Chat on WhatsApp"
     },
     {
       icon: <Mail className="w-6 h-6 text-[#6B1518]" />,
       title: "Email Us",
-      detail: BRAND.email,
+      detail: storeEmail,
       subdetail: "Send your detailed questions",
-      href: `mailto:${BRAND.email}`,
+      href: `mailto:${storeEmail}`,
       actionText: "Send Email"
     }
   ];
@@ -76,7 +86,7 @@ export default function ContactPage() {
   const faqs = [
     {
       q: "How can I place an order for sarees or womenswear?",
-      a: `You can easily add items to your cart on this website and click 'Place Order via WhatsApp', or reach out to us directly at +91 ${BRAND.phone}.`
+      a: `You can easily add items to your cart on this website and click 'Place Order via WhatsApp', or reach out to us directly at +91 ${storePhone}.`
     },
     {
       q: "What payment methods are accepted?",
@@ -88,11 +98,11 @@ export default function ContactPage() {
     },
     {
       q: "Is there free shipping available?",
-      a: `Yes! All orders above ₹${BRAND.freeShippingThreshold.toLocaleString('en-IN')} qualify for 100% Free Express Shipping.`
+      a: `Yes! All orders above ₹${Number(storeFreeShipping).toLocaleString('en-IN')} qualify for 100% Free Express Shipping.`
     },
     {
       q: "Do you have a physical store I can visit?",
-      a: `Yes — you're welcome to visit us at ${BRAND.address.full}.`
+      a: `Yes — you're welcome to visit us at ${storeAddress}.`
     }
   ];
 
@@ -104,12 +114,13 @@ export default function ContactPage() {
       <section className="text-center max-w-3xl mx-auto space-y-3" data-aos="fade-down">
         <span className="text-xs uppercase font-bold tracking-widest text-[#D3923A]">We Are Here To Help</span>
         <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900">
-          Contact {BRAND.name}
+          Contact {storeName}
         </h1>
         <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-          Have a question about a product, order tracking, or saree draping guidance? Reach out to {BRAND.ownerName} directly.
+          Have a question about a product, order tracking, or saree draping guidance? Reach out to {storeOwner} directly.
         </p>
       </section>
+
 
       {/* Contact Cards Grid */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6" data-aos="fade-up">
@@ -148,11 +159,11 @@ export default function ContactPage() {
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-full bg-[#FAF5EE] ring-2 ring-[#D3923A]/60 shadow-md flex items-center justify-center shrink-0 overflow-hidden p-0.5">
-                <img src="/logo-icon.png" alt={BRAND.name} className="h-full w-full object-contain" />
+                <img src="/logo-icon.png" alt={storeName} className="h-full w-full object-contain" />
               </div>
               <div>
                 <div className="font-serif font-bold text-2xl text-white tracking-wide">
-                  {BRAND.name}
+                  {storeName}
                 </div>
                 <div className="text-[10px] uppercase tracking-[0.18em] text-[#D3923A] font-semibold">
                   {BRAND.tagline}
@@ -167,33 +178,34 @@ export default function ContactPage() {
             <div className="space-y-4 text-xs sm:text-sm text-gray-200 pt-4 border-t border-[#831A1D]">
               <div className="flex items-center gap-3">
                 <User className="w-4 h-4 text-[#D3923A]" />
-                <span>Owner: <strong className="text-white">{BRAND.ownerFullName}</strong></span>
+                <span>Owner: <strong className="text-white">{storeOwner}</strong></span>
               </div>
 
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-[#D3923A]" />
-                <a href={`tel:${BRAND.phone}`} className="hover:text-white underline">
-                  {BRAND.phone}
+                <a href={`tel:${storePhone}`} className="hover:text-white underline">
+                  +91 {storePhone}
                 </a>
               </div>
 
+
               <div className="flex items-center gap-3">
                 <MessageCircle className="w-4 h-4 text-[#25D366]" />
-                <a href={waLink(`Hello ${BRAND.name}, I have an inquiry.`)} target="_blank" rel="noreferrer" className="hover:text-white underline">
-                  WhatsApp: {BRAND.phone}
+                <a href={waLink(`Hello ${storeName}, I have an inquiry.`, storeWhatsApp)} target="_blank" rel="noreferrer" className="hover:text-white underline">
+                  WhatsApp: +91 {storeWhatsApp}
                 </a>
               </div>
 
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-[#D3923A]" />
-                <a href={`mailto:${BRAND.email}`} className="hover:text-white underline">
-                  {BRAND.email}
+                <a href={`mailto:${storeEmail}`} className="hover:text-white underline">
+                  {storeEmail}
                 </a>
               </div>
 
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-[#D3923A] mt-0.5 shrink-0" />
-                <span>{BRAND.address.full}</span>
+                <span>{storeAddress}</span>
               </div>
             </div>
           </div>
@@ -222,7 +234,7 @@ export default function ContactPage() {
                 </p>
                 <div className="flex items-center justify-center gap-3">
                   <a
-                    href={waLink(`Hello ${BRAND.name}, my message: ${formData.message}`)}
+                    href={waLink(`Hello ${storeName}, my message: ${formData.message}`, storeWhatsApp)}
                     target="_blank"
                     rel="noreferrer"
                     className="bg-[#25D366] hover:bg-[#128C7E] text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-xs inline-flex items-center gap-1.5"
@@ -247,7 +259,7 @@ export default function ContactPage() {
                 </div>
                 <h4 className="font-serif text-2xl font-bold text-emerald-900">Message Received!</h4>
                 <p className="text-xs text-emerald-700 max-w-md mx-auto">
-                  Thank you for contacting <strong>{BRAND.name}</strong>. {BRAND.ownerName} will respond to your message shortly.
+                  Thank you for contacting <strong>{storeName}</strong>. {storeOwner} will respond to your message shortly.
                 </p>
                 <button
                   onClick={() => {
@@ -283,7 +295,7 @@ export default function ContactPage() {
                   <label className="block text-xs font-bold text-gray-800 uppercase mb-1">Phone Number *</label>
                   <input
                     type="tel"
-                    placeholder={BRAND.phone}
+                    placeholder={storePhone}
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className={`w-full text-xs p-3 rounded-xl border focus:outline-none ${
@@ -297,7 +309,7 @@ export default function ContactPage() {
                   <label className="block text-xs font-bold text-gray-800 uppercase mb-1">Email Address *</label>
                   <input
                     type="email"
-                    placeholder="name@example.com"
+                    placeholder={storeEmail}
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className={`w-full text-xs p-3 rounded-xl border focus:outline-none ${

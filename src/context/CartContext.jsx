@@ -6,6 +6,51 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const { coupons } = useStoreData();
 
+  const DEFAULT_COUPONS = [
+    {
+      id: 'cpn_av20',
+      code: 'AV20',
+      type: 'percentage',
+      discountValue: 20,
+      minOrder: 1000,
+      maxDiscount: 2000,
+      active: true,
+      description: 'Special Festive Offer: Flat 20% Off',
+    },
+    {
+      id: 'cpn_vastra10',
+      code: 'VASTRA10',
+      type: 'percentage',
+      discountValue: 10,
+      minOrder: 500,
+      maxDiscount: 1000,
+      active: true,
+      description: '10% Off on your order',
+    },
+    {
+      id: 'cpn_first100',
+      code: 'FIRST100',
+      type: 'flat',
+      discountValue: 100,
+      minOrder: 999,
+      maxDiscount: 100,
+      active: true,
+      description: 'Flat ₹100 Off on your first purchase',
+    },
+  ];
+
+  // Merge store coupons with default known coupons (giving precedence to admin coupons)
+  const allCoupons = (() => {
+    const map = new Map();
+    DEFAULT_COUPONS.forEach((c) => map.set(c.code.toUpperCase(), c));
+    (coupons || []).forEach((c) => {
+      if (c && c.code) map.set(c.code.toUpperCase(), c);
+    });
+    return Array.from(map.values());
+  })();
+
+  const activeCoupons = allCoupons.filter((c) => c.active);
+
   const [cartItems, setCartItems] = useState(() => {
     try {
       const saved = localStorage.getItem('sv_cart_items');
@@ -69,6 +114,32 @@ export const CartProvider = ({ children }) => {
     showToast(`Added "${product.name}" to your cart!`);
   };
 
+  // Buy Now: Sets exact quantity for this item in the cart instead of incrementing,
+  // preventing the 1 -> 2, 2 -> 4 doubling bug when Buy Now is clicked multiple times.
+  const buyNow = (product, quantity = 1, selectedColor = null, selectedSize = null) => {
+    setCartItems(prev => {
+      const itemKey = `${product.id}-${selectedColor || 'default'}-${selectedSize || 'default'}`;
+      const existingIndex = prev.findIndex(item => item.itemKey === itemKey);
+
+      if (existingIndex > -1) {
+        const updated = [...prev];
+        updated[existingIndex].quantity = quantity; // Exact set, not +=
+        return updated;
+      } else {
+        return [
+          ...prev,
+          {
+            ...product,
+            itemKey,
+            quantity,
+            selectedColor,
+            selectedSize
+          }
+        ];
+      }
+    });
+  };
+
   const removeFromCart = (itemKey) => {
     setCartItems(prev => prev.filter(item => item.itemKey !== itemKey));
   };
@@ -99,30 +170,31 @@ export const CartProvider = ({ children }) => {
   const isFreeShipping = subtotal >= freeShippingThreshold;
   const amountNeededForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
 
-  // Coupons come from the admin-managed list (Supabase-backed via StoreDataContext)
-  // instead of hardcoded strings, so codes created in /admin/coupons actually work at checkout.
   const appliedCoupon = couponCode
-    ? coupons.find((c) => c.code === couponCode && c.active)
+    ? activeCoupons.find((c) => c.code.toUpperCase() === couponCode.toUpperCase())
     : null;
-  const couponMinOrderMet = appliedCoupon ? subtotal >= appliedCoupon.minOrder : false;
+  const couponMinOrderMet = appliedCoupon ? subtotal >= (appliedCoupon.minOrder || 0) : false;
 
   const discountAmount = (() => {
     if (!appliedCoupon || !couponMinOrderMet) return 0;
     let amount = appliedCoupon.type === 'percentage'
-      ? (subtotal * appliedCoupon.discountValue) / 100
+      ? Math.round((subtotal * appliedCoupon.discountValue) / 100)
       : appliedCoupon.discountValue;
     if (appliedCoupon.maxDiscount) amount = Math.min(amount, appliedCoupon.maxDiscount);
     return Math.min(amount, subtotal);
   })();
 
   const applyCoupon = (code) => {
-    const normalized = code.trim().toUpperCase();
-    const match = coupons.find((c) => c.code === normalized && c.active);
+    const normalized = (code || '').trim().toUpperCase();
+    if (!normalized) {
+      return { success: false, message: 'Please enter a coupon code.' };
+    }
+    const match = activeCoupons.find((c) => c.code.toUpperCase() === normalized);
     if (!match) {
       return { success: false, message: 'Invalid or inactive coupon code.' };
     }
-    if (subtotal < match.minOrder) {
-      return { success: false, message: `This code needs a minimum order of ₹${match.minOrder.toLocaleString('en-IN')}.` };
+    if (subtotal < (match.minOrder || 0)) {
+      return { success: false, message: `This code requires a minimum order of ₹${(match.minOrder || 0).toLocaleString('en-IN')}.` };
     }
     setCouponCode(normalized);
     return { success: true, coupon: match };
@@ -136,6 +208,7 @@ export const CartProvider = ({ children }) => {
       isCartOpen,
       setIsCartOpen,
       addToCart,
+      buyNow,
       removeFromCart,
       updateQuantity,
       clearCart,
@@ -147,6 +220,7 @@ export const CartProvider = ({ children }) => {
       toastMessage,
       showToast,
       appliedCoupon: appliedCoupon && couponMinOrderMet ? appliedCoupon : null,
+      availableCoupons: activeCoupons,
       discountAmount,
       applyCoupon,
       removeCoupon,

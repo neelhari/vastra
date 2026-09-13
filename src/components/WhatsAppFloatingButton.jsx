@@ -2,15 +2,21 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { BRAND, waLink } from '../config/brand';
+import { useStoreData } from '../context/StoreDataContext';
 
 export default function WhatsAppFloatingButton() {
   const [isOpen, setIsOpen] = useState(false);
-  const defaultMessage = `Hello ${BRAND.name}, I would like to know more about your products.`;
+  const { settings } = useStoreData();
+  const storeName = settings?.storeName || BRAND.name;
+  const storePhone = settings?.whatsapp || settings?.phone || BRAND.phone;
+  const storeOwner = settings?.ownerName || BRAND.ownerFullName;
+
+  const defaultMessage = `Hello ${storeName}, I would like to know more about your products.`;
   const [customMsg, setCustomMsg] = useState(defaultMessage);
   const location = useLocation();
 
   const openWhatsApp = (msgToUse) => {
-    window.open(waLink(msgToUse || defaultMessage), '_blank');
+    window.open(waLink(msgToUse || defaultMessage, storePhone), '_blank');
   };
 
   // Hide on product, checkout, order success, and cart to prevent obscuring inputs and payment buttons.
@@ -34,7 +40,7 @@ export default function WhatsAppFloatingButton() {
                 <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#25D366]" />
               </div>
               <div>
-                <h4 className="font-bold text-xs sm:text-sm">{BRAND.name} Support</h4>
+                <h4 className="font-bold text-xs sm:text-sm">{storeName} Support</h4>
                 <p className="text-[10px] sm:text-[11px] text-emerald-200">Usually replies instantly</p>
               </div>
             </div>
@@ -48,10 +54,11 @@ export default function WhatsAppFloatingButton() {
 
           <div className="p-3.5 sm:p-4 bg-[#ECE5DD] space-y-3">
             <div className="bg-white p-3 rounded-lg rounded-tl-none shadow-xs text-xs text-gray-800 space-y-1">
-              <p className="font-bold text-[#075E54]">{BRAND.name} Care</p>
+              <p className="font-bold text-[#075E54]">{storeName} Care</p>
               <p>Hello! 👋 How can we assist you with our Sarees, Womenswear, or Fabric collections today?</p>
-              <span className="text-[10px] text-gray-400 block text-right">{BRAND.ownerName}</span>
+              <span className="text-[10px] text-gray-400 block text-right">{storeOwner}</span>
             </div>
+
 
             <div className="space-y-2 pt-1">
               <label className="block text-[11px] font-semibold text-gray-700">Your Message:</label>

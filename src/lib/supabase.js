@@ -610,9 +610,12 @@ export async function fetchSettings() {
     const { data, error } = await supabase.from('settings').select('*').eq('id', 1).maybeSingle();
     if (!error && data) {
       const mapped = mapSettingsFromDb(data);
-      // Merge with any offline/local overrides if saved
-      const merged = localSaved ? { ...mapped, ...localSaved } : mapped;
-      return { success: true, data: merged };
+      try {
+        localStorage.setItem('aalaya_store_settings', JSON.stringify(mapped));
+      } catch (e) {
+        // ignore
+      }
+      return { success: true, data: mapped };
     }
   } catch (err) {
     console.warn('Supabase fetchSettings error:', err);
@@ -621,6 +624,7 @@ export async function fetchSettings() {
   if (localSaved) return { success: true, data: localSaved };
   return { success: false, data: null, message: 'Could not load settings' };
 }
+
 
 export async function updateSettingsInDb(updates) {
   // Always persist locally first so changes take effect immediately across all screens

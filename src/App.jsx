@@ -49,10 +49,8 @@ import AdminProducts from './admin/pages/AdminProducts';
 import AdminCategories from './admin/pages/AdminCategories';
 import AdminInventory from './admin/pages/AdminInventory';
 import AdminOrders from './admin/pages/AdminOrders';
-import AdminCustomers from './admin/pages/AdminCustomers';
 import AdminCoupons from './admin/pages/AdminCoupons';
 import AdminBanners from './admin/pages/AdminBanners';
-import AdminMessages from './admin/pages/AdminMessages';
 import AdminSettings from './admin/pages/AdminSettings';
 
 function ScrollAndAosReset() {
@@ -138,12 +136,12 @@ function AppContent() {
               <Route path="categories" element={<AdminCategories />} />
               <Route path="inventory" element={<AdminInventory />} />
               <Route path="orders" element={<AdminOrders />} />
-              <Route path="customers" element={<AdminCustomers />} />
+              <Route path="customers" element={<AdminOrders initialTab="customers" />} />
               <Route path="coupons" element={<AdminCoupons />} />
               <Route path="banners" element={<AdminBanners />} />
-              <Route path="messages" element={<AdminMessages />} />
               <Route path="settings" element={<AdminSettings />} />
               <Route path="*" element={<AdminDashboard />} />
+
             </Route>
           </Route>
 

@@ -8,20 +8,23 @@ export const BRAND = {
   motto: "Wear the tradition. Own the style. Celebrate YOU.",
 
   ownerName: "Harini",
-  ownerFullName: "Jupudy Harini",
+  ownerFullName: "Jupudi Harini",
 
-  phone: "7989222233",
+  phone: "6301646462",
   // wa.me requires country code, no + or spaces
-  whatsappNumber: "917989222233",
-  email: "aalayavastra2026@gmail.com",
+  whatsappNumber: "919999999999",
+  email: "contact@aalayavastra.com",
 
   address: {
-    line1: "Vidyuth Colony, 3rd Street",
-    line2: "Venkateshwara Nagar, Beside BJP Office",
-    line3: "Turtle Wax (Upstairs)",
+    line1: "Main Bazaar Road",
+    line2: "Near Temple",
     city: "Rajahmundry",
-    full: "Vidyuth Colony, 3rd Street, Venkateshwara Nagar, Beside BJP Office, Turtle Wax (Upstairs), Rajahmundry",
+    state: "Andhra Pradesh",
+    pincode: "533101",
+    full: "Main Bazaar Road, Rajahmundry, Andhra Pradesh - 533101",
   },
+
+  gstin: "37AAAAA0000A1Z5",
 
   // TODO: client hasn't shared social handles yet — replace when available
   instagramHandle: "@aalayavastra",
@@ -45,6 +48,9 @@ Whether it's a festival, wedding, celebration, or an everyday look, Aalaya Vastr
   freeShippingThreshold: 2000,
 };
 
-export function waLink(message) {
-  return `https://wa.me/${BRAND.whatsappNumber}?text=${encodeURIComponent(message)}`;
+export function waLink(message, customNumber = null) {
+  const rawNum = customNumber || BRAND.whatsappNumber || BRAND.phone || '';
+  const clean = rawNum.replace(/\D/g, '');
+  const formatted = clean.startsWith('91') && clean.length === 12 ? clean : `91${clean.replace(/^0+/, '')}`;
+  return `https://wa.me/${formatted}?text=${encodeURIComponent(message)}`;
 }
