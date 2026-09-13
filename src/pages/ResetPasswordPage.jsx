@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle2, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, isUserAdmin } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { BRAND } from '../config/brand';
 
@@ -17,6 +17,7 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [sessionChecked, setSessionChecked] = useState(false);
   const [hasValidRecoverySession, setHasValidRecoverySession] = useState(false);
+  const [isUserAnAdmin, setIsUserAnAdmin] = useState(false);
 
   useEffect(() => {
     // Check if recovery session is active via Supabase
@@ -30,6 +31,10 @@ export default function ResetPasswordPage() {
       const { data } = await supabase.auth.getSession();
       if (data?.session) {
         setHasValidRecoverySession(true);
+        if (data.session.user) {
+          const admin = await isUserAdmin(data.session.user.id, data.session.user.email);
+          setIsUserAnAdmin(admin);
+        }
       } else {
         // Also check if URL hash has access_token or type=recovery
         const hash = window.location.hash;
@@ -46,9 +51,13 @@ export default function ResetPasswordPage() {
 
     // Listen for auth state change recovery event
     if (supabase) {
-      const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'PASSWORD_RECOVERY' || session) {
           setHasValidRecoverySession(true);
+          if (session?.user) {
+            const admin = await isUserAdmin(session.user.id, session.user.email);
+            setIsUserAnAdmin(admin);
+          }
         }
       });
       return () => authListener?.subscription?.unsubscribe();
@@ -202,27 +211,51 @@ export default function ResetPasswordPage() {
                 <CheckCircle2 className="w-9 h-9" />
               </div>
               <div className="space-y-2">
-                <h2 className="font-serif text-2xl font-bold text-gray-900">Password Changed!</h2>
+                <h2 className="font-serif text-2xl font-bold text-gray-900">
+                  {isUserAnAdmin ? 'Admin Password Changed!' : 'Password Changed!'}
+                </h2>
                 <p className="text-xs sm:text-sm text-gray-600 max-w-sm mx-auto">
-                  Your new password has been saved. You can now sign in to your Aalaya Vastra account.
+                  {isUserAnAdmin
+                    ? 'Your administrator password has been updated securely. You can now access the CMS dashboard.'
+                    : 'Your password has been saved. You can now sign in to your Aalaya Vastra account.'}
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <button
-                  onClick={() => navigate('/admin/login')}
-                  className="flex-1 bg-[#6B1518] hover:bg-[#4B0F11] text-white font-bold text-xs sm:text-sm py-3.5 rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>ADMIN SIGN IN</span>
-                </button>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs sm:text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer"
-                >
-                  <span>CUSTOMER LOGIN</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                {isUserAnAdmin ? (
+                  <>
+                    <button
+                      onClick={() => navigate('/admin/login')}
+                      className="flex-1 bg-[#6B1518] hover:bg-[#4B0F11] text-white font-bold text-xs sm:text-sm py-3.5 rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>SIGN IN TO ADMIN PANEL</span>
+                    </button>
+                    <button
+                      onClick={() => navigate('/')}
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs sm:text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <span>GO TO STOREFRONT</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => navigate('/login')}
+                      className="flex-1 bg-[#6B1518] hover:bg-[#4B0F11] text-white font-bold text-xs sm:text-sm py-3.5 rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <span>CUSTOMER LOGIN</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => navigate('/shop')}
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs sm:text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <span>CONTINUE SHOPPING</span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}
