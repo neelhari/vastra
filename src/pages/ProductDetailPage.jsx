@@ -237,14 +237,14 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
-    addToCart(product, quantity, isSaree ? null : selectedSize);
+    addToCart(product, quantity, null, isSaree ? null : selectedSize);
   };
 
   // Buy Now: Sets exact quantity in cart to avoid the 1 -> 2, 2 -> 4 jumping bug,
   // and navigates directly to checkout as requested by user.
   const handleBuyNow = () => {
     if (isOutOfStock) return;
-    buyNow(product, quantity, isSaree ? null : selectedSize);
+    buyNow(product, quantity, null, isSaree ? null : selectedSize);
     navigate('/checkout');
   };
 

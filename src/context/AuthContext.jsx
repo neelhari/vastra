@@ -162,7 +162,7 @@ export function AuthProvider({ children }) {
       return { success: false, error: 'Please enter both Email and Password.' };
     }
 
-    // Try Supabase Auth First
+    // 1. Try Supabase Auth First
     try {
       const supaRes = await signInCustomer({ email: cleanEmail, password });
       if (supaRes.success && supaRes.data?.user) {
@@ -176,31 +176,25 @@ export function AuthProvider({ children }) {
         };
         setUser(loggedUser);
         return { success: true, user: loggedUser };
-      } else if (supaRes.message && !supaRes.message.includes('fetch')) {
-        // Return clear Supabase message
-        if (supaRes.message.includes('Invalid login credentials')) {
-          return { success: false, error: 'Invalid email or password. Please check and try again.' };
-        }
       }
     } catch (e) {
-      console.warn('Supabase login error check:', e);
+      console.warn('Supabase login check notice:', e);
     }
 
-    // Fallback: Check local registered users
+    // 2. Fallback: Check local registered users (including seed demo users & offline accounts)
     const found = registeredUsers.find((u) => u.email.toLowerCase() === cleanEmail);
-    if (!found) {
-      return {
-        success: false,
-        error: 'No account found with this email address. Please Create an Account first.',
-      };
+    if (found) {
+      if (found.password !== password) {
+        return { success: false, error: 'Incorrect password. Please try again or click Forgot Password.' };
+      }
+      setUser(found);
+      return { success: true, user: found };
     }
 
-    if (found.password !== password) {
-      return { success: false, error: 'Incorrect password. Please try again or click Forgot Password.' };
-    }
-
-    setUser(found);
-    return { success: true, user: found };
+    return {
+      success: false,
+      error: 'Invalid email or password. If you do not have an account yet, please Create an Account.',
+    };
   };
 
   // 3. Send Password Reset Email

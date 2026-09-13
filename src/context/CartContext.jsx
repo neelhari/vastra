@@ -4,7 +4,7 @@ import { useStoreData } from './StoreDataContext';
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const { coupons } = useStoreData();
+  const { settings, coupons } = useStoreData();
 
   const DEFAULT_COUPONS = [
     {
@@ -89,23 +89,32 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   const addToCart = (product, quantity = 1, selectedColor = null, selectedSize = null) => {
+    let color = selectedColor;
+    let size = selectedSize;
+    if (color && !size && ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free Size', 'Standard', '40', '42', '44'].includes(color)) {
+      size = color;
+      color = null;
+    }
+    const safeQty = Math.max(1, Math.floor(Number(quantity) || 1));
+
     setCartItems(prev => {
-      const itemKey = `${product.id}-${selectedColor || 'default'}-${selectedSize || 'default'}`;
+      const itemKey = `${product.id}-${color || 'default'}-${size || 'default'}`;
       const existingIndex = prev.findIndex(item => item.itemKey === itemKey);
 
       if (existingIndex > -1) {
         const updated = [...prev];
-        updated[existingIndex].quantity += quantity;
+        updated[existingIndex].quantity = (Number(updated[existingIndex].quantity) || 1) + safeQty;
         return updated;
       } else {
         return [
           ...prev,
           {
             ...product,
+            price: Math.max(0, Number(product.price) || 0),
             itemKey,
-            quantity,
-            selectedColor,
-            selectedSize
+            quantity: safeQty,
+            selectedColor: color,
+            selectedSize: size
           }
         ];
       }
@@ -115,25 +124,34 @@ export const CartProvider = ({ children }) => {
   };
 
   // Buy Now: Sets exact quantity for this item in the cart instead of incrementing,
-  // preventing the 1 -> 2, 2 -> 4 doubling bug when Buy Now is clicked multiple times.
+  // preventing any quantity jumping or doubling bug.
   const buyNow = (product, quantity = 1, selectedColor = null, selectedSize = null) => {
+    let color = selectedColor;
+    let size = selectedSize;
+    if (color && !size && ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free Size', 'Standard', '40', '42', '44'].includes(color)) {
+      size = color;
+      color = null;
+    }
+    const safeQty = Math.max(1, Math.floor(Number(quantity) || 1));
+
     setCartItems(prev => {
-      const itemKey = `${product.id}-${selectedColor || 'default'}-${selectedSize || 'default'}`;
+      const itemKey = `${product.id}-${color || 'default'}-${size || 'default'}`;
       const existingIndex = prev.findIndex(item => item.itemKey === itemKey);
 
       if (existingIndex > -1) {
         const updated = [...prev];
-        updated[existingIndex].quantity = quantity; // Exact set, not +=
+        updated[existingIndex].quantity = safeQty; // Exact set, not +=
         return updated;
       } else {
         return [
           ...prev,
           {
             ...product,
+            price: Math.max(0, Number(product.price) || 0),
             itemKey,
-            quantity,
-            selectedColor,
-            selectedSize
+            quantity: safeQty,
+            selectedColor: color,
+            selectedSize: size
           }
         ];
       }
@@ -145,11 +163,12 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = (itemKey, newQuantity) => {
-    if (newQuantity <= 0) {
+    const safeQty = Math.max(0, Math.floor(Number(newQuantity) || 0));
+    if (safeQty <= 0) {
       removeFromCart(itemKey);
       return;
     }
-    setCartItems(prev => prev.map(item => item.itemKey === itemKey ? { ...item, quantity: newQuantity } : item));
+    setCartItems(prev => prev.map(item => item.itemKey === itemKey ? { ...item, quantity: safeQty } : item));
   };
 
   const clearCart = () => {
@@ -164,9 +183,14 @@ export const CartProvider = ({ children }) => {
     }, 3500);
   };
 
-  const totalItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const freeShippingThreshold = 2000;
+  const totalItemsCount = cartItems.reduce((acc, item) => acc + Math.max(1, Math.floor(Number(item.quantity) || 1)), 0);
+  const subtotal = cartItems.reduce((acc, item) => {
+    const p = Math.max(0, Number(item.price) || 0);
+    const q = Math.max(1, Math.floor(Number(item.quantity) || 1));
+    return acc + (p * q);
+  }, 0);
+  
+  const freeShippingThreshold = Number(settings?.freeShippingThreshold) || 2000;
   const isFreeShipping = subtotal >= freeShippingThreshold;
   const amountNeededForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
 
@@ -177,11 +201,14 @@ export const CartProvider = ({ children }) => {
 
   const discountAmount = (() => {
     if (!appliedCoupon || !couponMinOrderMet) return 0;
+    const val = Math.max(0, Number(appliedCoupon.discountValue) || 0);
     let amount = appliedCoupon.type === 'percentage'
-      ? Math.round((subtotal * appliedCoupon.discountValue) / 100)
-      : appliedCoupon.discountValue;
-    if (appliedCoupon.maxDiscount) amount = Math.min(amount, appliedCoupon.maxDiscount);
-    return Math.min(amount, subtotal);
+      ? Math.round((subtotal * val) / 100)
+      : val;
+    if (appliedCoupon.maxDiscount) {
+      amount = Math.min(amount, Math.max(0, Number(appliedCoupon.maxDiscount) || 0));
+    }
+    return Math.max(0, Math.min(amount, subtotal));
   })();
 
   const applyCoupon = (code) => {

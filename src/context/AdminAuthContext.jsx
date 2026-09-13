@@ -41,27 +41,35 @@ export function AdminAuthProvider({ children }) {
 
     const resolve = async (sess) => {
       if (!active) return;
+      
+      const saved = localStorage.getItem('aalaya_admin_session');
+      let masterAdmin = null;
+      if (saved) {
+        try {
+          masterAdmin = JSON.parse(saved);
+        } catch {
+          masterAdmin = null;
+        }
+      }
+
       if (sess?.user) {
-        setSession(sess);
         const admin = await isUserAdmin(sess.user.id);
-        if (active) setIsAdmin(admin);
+        if (admin) {
+          setSession(sess);
+          if (active) setIsAdmin(true);
+        } else if (masterAdmin) {
+          // A customer is signed in to storefront, but master admin session is preserved
+          setSession(masterAdmin);
+          if (active) setIsAdmin(true);
+        } else {
+          setSession(sess);
+          if (active) setIsAdmin(false);
+        }
+      } else if (masterAdmin) {
+        setSession(masterAdmin);
+        if (active) setIsAdmin(true);
       } else {
-        // If master admin was stored in localStorage, preserve it
-        const saved = localStorage.getItem('aalaya_admin_session');
-        if (saved) {
-          try {
-            const parsed = JSON.parse(saved);
-            if (active) {
-              setSession(parsed);
-              setIsAdmin(true);
-            }
-          } catch {
-            if (active) {
-              setSession(null);
-              setIsAdmin(false);
-            }
-          }
-        } else if (active) {
+        if (active) {
           setSession(null);
           setIsAdmin(false);
         }
