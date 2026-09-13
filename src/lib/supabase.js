@@ -38,6 +38,16 @@ export async function signOutAdmin() {
 }
 
 export async function isUserAdmin(userId, userEmail = null) {
+  if (userEmail) {
+    const clean = userEmail.trim().toLowerCase();
+    if (
+      clean === 'aalayavastra2026@gmail.com' ||
+      clean === 'admin@aalayavastra.com' ||
+      clean === 'harini@aalayavastra.com'
+    ) {
+      return true;
+    }
+  }
   if (!supabase) return false;
   try {
     if (userId) {

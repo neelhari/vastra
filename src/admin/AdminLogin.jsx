@@ -97,7 +97,7 @@ export default function AdminLogin() {
                     autoCorrect="off"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@aalayavastra.com"
+                    placeholder="aalayavastra2026@gmail.com"
                     className="w-full pl-9 pr-3 py-3 text-xs sm:text-sm font-semibold text-gray-900 rounded-xl border border-gray-200 focus:border-[#6B1518] focus:outline-none transition-colors"
                   />
                 </div>
@@ -223,7 +223,7 @@ export default function AdminLogin() {
                         setResetEmail(e.target.value);
                         setEmail(e.target.value);
                       }}
-                      placeholder="admin@aalayavastra.com"
+                      placeholder="aalayavastra2026@gmail.com"
                       className="w-full pl-9 pr-3 py-3 text-xs sm:text-sm font-semibold text-gray-900 rounded-xl border border-gray-200 focus:border-[#6B1518] focus:outline-none transition-colors"
                       autoFocus
                     />
