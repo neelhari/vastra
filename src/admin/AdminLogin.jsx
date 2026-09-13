@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate, Link } from 'react-router-dom';
 import { Lock, Mail, Loader2, ShieldCheck, KeyRound, Eye, EyeOff, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
-import { sendPasswordResetEmailToSupabase } from '../lib/supabase';
+import { sendPasswordResetEmailToSupabase, isUserAdmin } from '../lib/supabase';
 import { BRAND } from '../config/brand';
 
 export default function AdminLogin() {
@@ -61,6 +61,15 @@ export default function AdminLogin() {
     }
 
     setResetSubmitting(true);
+
+    // Strict Security Gate: Only registered admin accounts can request an admin reset link
+    const isAdmin = await isUserAdmin(null, cleanEmail);
+    if (!isAdmin) {
+      setResetSubmitting(false);
+      setResetError('Access Denied: This email is not registered as an authorized administrator account.');
+      return;
+    }
+
     const result = await sendPasswordResetEmailToSupabase(cleanEmail);
     setResetSubmitting(false);
 

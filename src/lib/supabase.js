@@ -110,10 +110,68 @@ export async function signInCustomer({ email, password }) {
   }
 }
 
-export async function sendPasswordResetEmailToSupabase(email) {
-  if (!supabase) return { success: false, message: 'Supabase client not initialized' };
+export async function checkRegisteredEmailExists(email) {
+  if (!email) return false;
+  const clean = email.trim().toLowerCase();
+
+  // 1. Check admin hardcoded / pre-authorized emails
+  if (
+    clean === 'aalayavastra2026@gmail.com' ||
+    clean === 'admin@aalayavastra.com' ||
+    clean === 'harini@aalayavastra.com'
+  ) {
+    return true;
+  }
+
+  // 2. Check local registered users
   try {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    const raw = localStorage.getItem('aalaya_registered_users');
+    if (raw) {
+      const list = JSON.parse(raw);
+      if (Array.isArray(list) && list.some((u) => u.email && u.email.trim().toLowerCase() === clean)) {
+        return true;
+      }
+    }
+  } catch (e) {}
+
+  if (!supabase) return false;
+
+  // 3. Check profiles table in Supabase
+  try {
+    const { data: profile } = await supabase.from('profiles').select('id, email').ilike('email', clean).maybeSingle();
+    if (profile) return true;
+  } catch (e) {}
+
+  // 4. Check admin_users table in Supabase
+  try {
+    const { data: admin } = await supabase.from('admin_users').select('id, email').ilike('email', clean).maybeSingle();
+    if (admin) return true;
+  } catch (e) {}
+
+  return false;
+}
+
+export async function sendPasswordResetEmailToSupabase(email) {
+  const clean = (email || '').trim().toLowerCase();
+  if (!clean || !clean.includes('@')) {
+    return { success: false, message: 'Please enter a valid email address.' };
+  }
+
+  // Security Verification: Only registered emails can receive a password reset link
+  const exists = await checkRegisteredEmailExists(clean);
+  if (!exists) {
+    return {
+      success: false,
+      message: 'No registered account found with this email address. Please check your email or Create an Account.',
+    };
+  }
+
+  if (!supabase) {
+    return { success: true, message: `Mock reset link sent to ${clean}` };
+  }
+
+  try {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(clean, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) return { success: false, message: error.message };

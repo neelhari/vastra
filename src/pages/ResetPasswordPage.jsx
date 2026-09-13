@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Eye, EyeOff, CheckCircle2, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Lock, Eye, EyeOff, CheckCircle2, ArrowRight, ShieldCheck, AlertCircle, ShieldAlert } from 'lucide-react';
 import { supabase, isUserAdmin } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { BRAND } from '../config/brand';
@@ -20,29 +20,39 @@ export default function ResetPasswordPage() {
   const [isUserAnAdmin, setIsUserAnAdmin] = useState(false);
 
   useEffect(() => {
-    // Check if recovery session is active via Supabase
+    // Check if authentic recovery session or token is active
     const checkSession = async () => {
+      const hash = window.location.hash || '';
+      const hasRecoveryToken =
+        hash.includes('access_token') ||
+        hash.includes('type=recovery') ||
+        hash.includes('type=invite') ||
+        window.location.search.includes('type=recovery');
+
       if (!supabase) {
-        setHasValidRecoverySession(true);
+        // In local mock mode, require hash or existing auth
+        if (hasRecoveryToken || user) {
+          setHasValidRecoverySession(true);
+        } else {
+          setHasValidRecoverySession(false);
+        }
         setSessionChecked(true);
         return;
       }
 
+      // Check real Supabase recovery session
       const { data } = await supabase.auth.getSession();
-      if (data?.session) {
+      if (data?.session && (hasRecoveryToken || data.session.user)) {
         setHasValidRecoverySession(true);
         if (data.session.user) {
           const admin = await isUserAdmin(data.session.user.id, data.session.user.email);
           setIsUserAnAdmin(admin);
         }
+      } else if (hasRecoveryToken) {
+        setHasValidRecoverySession(true);
       } else {
-        // Also check if URL hash has access_token or type=recovery
-        const hash = window.location.hash;
-        if (hash.includes('access_token') || hash.includes('type=recovery')) {
-          setHasValidRecoverySession(true);
-        } else {
-          setHasValidRecoverySession(true); // Allow setting new password
-        }
+        // STRICT SECURITY GATE: No recovery token or recovery session found!
+        setHasValidRecoverySession(false);
       }
       setSessionChecked(true);
     };
@@ -79,6 +89,7 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
+      let currentUserEmail = null;
       if (supabase) {
         const { error } = await supabase.auth.updateUser({
           password: newPassword,
@@ -87,13 +98,24 @@ export default function ResetPasswordPage() {
         if (error) {
           throw error;
         }
+
+        const { data: userData } = await supabase.auth.getUser();
+        currentUserEmail = userData?.user?.email;
+        if (userData?.user) {
+          const admin = await isUserAdmin(userData.user.id, userData.user.email);
+          setIsUserAnAdmin(admin);
+        }
       }
 
-      // Also update local registered user records if email exists
+      // STRICT SECURITY: ONLY update the authenticated user's record in local storage
       try {
         const registered = JSON.parse(localStorage.getItem('aalaya_registered_users') || '[]');
-        if (registered.length > 0) {
-          const updated = registered.map((u) => ({ ...u, password: newPassword }));
+        if (registered.length > 0 && currentUserEmail) {
+          const updated = registered.map((u) =>
+            u.email && u.email.trim().toLowerCase() === currentUserEmail.trim().toLowerCase()
+              ? { ...u, password: newPassword }
+              : u
+          );
           localStorage.setItem('aalaya_registered_users', JSON.stringify(updated));
         }
       } catch (err) {
@@ -112,6 +134,68 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center bg-[#FAF5EE]">
         <div className="animate-spin w-8 h-8 border-4 border-[#6B1518] border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // STRICT SECURITY GATE: Block direct unauthenticated access to reset password
+  if (!hasValidRecoverySession) {
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center px-4 py-10 sm:py-16 bg-[#FAF5EE]">
+        <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+          <div className="bg-[#6B1518] text-white p-8 sm:p-10 text-center sm:text-left">
+            <span className="text-[11px] tracking-widest font-extrabold text-[#D3923A] uppercase block">
+              {BRAND.name} Security Guard
+            </span>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold">
+              Access Restricted
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-200 leading-relaxed mt-1">
+              Valid email recovery token required to set a new password.
+            </p>
+          </div>
+
+          <div className="p-7 sm:p-10 space-y-6 text-center">
+            <div className="w-16 h-16 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto border border-red-100 shadow-sm">
+              <ShieldAlert className="w-9 h-9" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="font-serif text-2xl font-bold text-gray-900">
+                Invalid or Missing Reset Link
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
+                For your account security, passwords can only be changed by clicking the official recovery link sent to your registered email address.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 text-left space-y-1">
+              <p className="font-bold">🔒 Protected Action:</p>
+              <p>Direct access to this page without clicking an authentic email recovery link is forbidden. Please request a new reset link below.</p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Link
+                to="/forgot-password"
+                className="flex-1 bg-[#6B1518] hover:bg-[#4B0F11] text-white font-bold text-xs sm:text-sm py-3.5 rounded-2xl shadow-md text-center transition-all flex items-center justify-center gap-1.5"
+              >
+                <span>REQUEST RESET LINK</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                to="/login"
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs sm:text-sm py-3.5 rounded-2xl text-center transition-all flex items-center justify-center"
+              >
+                <span>RETURN TO LOGIN</span>
+              </Link>
+            </div>
+
+            <div className="pt-4 border-t border-gray-100 flex items-center justify-center gap-4 text-xs text-gray-400">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#D3923A]" /> 100% Encrypted &amp; Secure
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
