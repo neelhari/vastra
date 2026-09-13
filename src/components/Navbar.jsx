@@ -37,7 +37,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-100 font-sans">
+    <header className="relative md:sticky md:top-0 z-40 bg-white shadow-sm border-b border-gray-100 font-sans">
       {/* Top Announcement Bar */}
       {(settings?.announcementEnabled !== false) && (
         <div className="bg-[#6B1518] text-white text-[11px] sm:text-xs py-1.5 px-3 border-b border-[#4B0F11]">

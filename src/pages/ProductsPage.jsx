@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Filter, SlidersHorizontal, RefreshCw, ShoppingBag, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Search, Filter, SlidersHorizontal, RefreshCw, ShoppingBag, ChevronRight, ArrowLeft, X } from 'lucide-react';
 import { useStoreData } from '../context/StoreDataContext';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
@@ -11,16 +11,28 @@ export default function ProductsPage() {
   const { products, categories, loading } = useStoreData();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCategory = searchParams.get('category') || 'all';
+  const urlQuery = searchParams.get('q') || '';
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(urlQuery);
   const [sortBy, setSortBy] = useState('featured');
 
+  // Keep search state in sync when URL changes
+  React.useEffect(() => {
+    setSearchQuery(urlQuery);
+  }, [urlQuery]);
+
   const setSelectedCategory = (catId) => {
-    if (catId === 'all') {
-      setSearchParams({});
-    } else {
-      setSearchParams({ category: catId });
-    }
+    const nextParams = {};
+    if (catId && catId !== 'all') nextParams.category = catId;
+    if (searchQuery.trim()) nextParams.q = searchQuery.trim();
+    setSearchParams(nextParams);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    const nextParams = {};
+    if (selectedCategory && selectedCategory !== 'all') nextParams.category = selectedCategory;
+    setSearchParams(nextParams);
   };
 
   const categoryList = [
@@ -34,13 +46,19 @@ export default function ProductsPage() {
       if (selectedCategory && selectedCategory !== 'all' && product.category !== selectedCategory) {
         return false;
       }
-      // Search filter
+      // Multi-attribute Search filter
       if (searchQuery.trim() !== '') {
-        const query = searchQuery.toLowerCase();
-        const matchName = product.name.toLowerCase().includes(query);
+        const query = searchQuery.toLowerCase().trim();
+        const matchName = (product.name || '').toLowerCase().includes(query);
         const matchCat = (product.category || '').toLowerCase().includes(query);
         const matchSub = (product.subcategory || '').toLowerCase().includes(query);
-        if (!matchName && !matchCat && !matchSub) return false;
+        const matchFabric = (product.fabric || '').toLowerCase().includes(query);
+        const matchMaterial = (product.material || '').toLowerCase().includes(query);
+        const matchOccasion = (product.occasion || '').toLowerCase().includes(query);
+        const matchDesc = (product.description || '').toLowerCase().includes(query);
+        if (!matchName && !matchCat && !matchSub && !matchFabric && !matchMaterial && !matchOccasion && !matchDesc) {
+          return false;
+        }
       }
       return true;
     }).sort((a, b) => {
@@ -119,9 +137,24 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* Item Counter */}
-        <div className="flex items-center justify-between text-xs text-gray-500 px-1 pt-1 border-t border-gray-100">
-          <span>Showing <strong>{filteredProducts.length}</strong> of {products.length} items</span>
+        {/* Item Counter & Active Query Badge */}
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500 px-1 pt-1 border-t border-gray-100">
+          <div className="flex items-center gap-2">
+            <span>Showing <strong>{filteredProducts.length}</strong> of {products.length} items</span>
+            {searchQuery.trim() && (
+              <span className="inline-flex items-center gap-1.5 bg-[#FAF5EE] text-[#6B1518] px-2.5 py-0.5 rounded-full border border-[#6B1518]/20 font-bold text-[11px]">
+                <span>Search: "{searchQuery}"</span>
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="hover:text-red-700 p-0.5 cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
