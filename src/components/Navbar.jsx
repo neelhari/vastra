@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Search, ShoppingBag, Heart, Menu, X, Phone, MapPin, ChevronRight, MessageCircle, User } from 'lucide-react';
-import { InstagramIcon } from './BrandIcons';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
@@ -38,40 +37,36 @@ export default function Navbar() {
 
   return (
     <header className="relative md:sticky md:top-0 z-40 bg-white shadow-sm border-b border-gray-100 font-sans">
-      {/* Top Announcement Bar */}
+      {/* Top Continuous Marquee Scrolling Announcement Bar */}
       {(settings?.announcementEnabled !== false) && (
-        <div className="bg-[#6B1518] text-white text-[11px] sm:text-xs py-1.5 px-3 border-b border-[#4B0F11]">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 font-medium tracking-wide truncate">
-              <span className="hidden sm:inline-block bg-[#D3923A] text-[#6B1518] text-[9px] uppercase font-bold px-1.5 py-0.5 rounded shrink-0">Announcement</span>
-              {settings?.announcementLink ? (
-                <a href={settings.announcementLink} className="truncate hover:underline hover:text-[#FAF5EE] transition-colors">
-                  {settings.announcementText || `✨ FREE SHIPPING on orders above ₹${(settings?.freeShippingThreshold || BRAND.freeShippingThreshold).toLocaleString('en-IN')}`}
-                </a>
-              ) : (
-                <span className="truncate">
-                  {settings?.announcementText || `✨ FREE SHIPPING on orders above ₹${(settings?.freeShippingThreshold || BRAND.freeShippingThreshold).toLocaleString('en-IN')}`}
+        <div className="bg-[#6B1518] text-white text-[11px] sm:text-xs py-2 border-b border-[#4B0F11] overflow-hidden whitespace-nowrap select-none">
+          <Link
+            to={settings?.announcementLink || '/shop'}
+            className="flex items-center w-max animate-marquee hover:[animation-play-state:paused] cursor-pointer"
+            title="Click to view offers"
+          >
+            {[0, 1, 2, 3].map((idx) => (
+              <div key={idx} className="flex items-center shrink-0">
+                <span className="mx-6 sm:mx-10 inline-flex items-center gap-2 font-medium tracking-wide">
+                  <span className="bg-[#D3923A] text-[#6B1518] text-[9px] uppercase font-black px-1.5 py-0.5 rounded shrink-0 shadow-2xs">
+                    Announcement
+                  </span>
+                  <span>
+                    {settings?.announcementText || 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20'}
+                  </span>
+                  <span className="text-[#D3923A] ml-4 text-xs">✦</span>
                 </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2.5 text-gray-200 text-[11px] shrink-0">
-              <a href={`tel:${settings?.phone || BRAND.phone}`} className="hover:text-[#D3923A] transition-colors flex items-center gap-1">
-                <Phone className="w-3 h-3 text-[#D3923A]" />
-                <span className="hidden sm:inline">+91 {settings?.phone || BRAND.phone}</span>
-              </a>
-              <span className="hidden sm:inline text-[#831A1D]">|</span>
-              <div className="hidden sm:flex items-center gap-2">
-                <span>Follow us:</span>
-                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-[#D3923A] transition-colors" title="Instagram">
-                  <InstagramIcon className="w-3.5 h-3.5" />
-                </a>
-                <a href={waLink(`Hello ${settings?.storeName || BRAND.name}, I have an inquiry.`)} target="_blank" rel="noreferrer" className="hover:text-[#D3923A] transition-colors" title="WhatsApp">
-                  <MessageCircle className="w-3.5 h-3.5" />
-                </a>
+                <span className="mx-6 sm:mx-10 inline-flex items-center gap-2 font-medium text-gray-200">
+                  <span>100% Authentic Handloom Silk &amp; Craft</span>
+                  <span className="text-[#D3923A] ml-4 text-xs">✦</span>
+                </span>
+                <span className="mx-6 sm:mx-10 inline-flex items-center gap-2 font-medium text-gray-200">
+                  <span>Free Express Delivery on Orders ₹{(settings?.freeShippingThreshold || BRAND.freeShippingThreshold).toLocaleString('en-IN')}+</span>
+                  <span className="text-[#D3923A] ml-4 text-xs">✦</span>
+                </span>
               </div>
-            </div>
-          </div>
+            ))}
+          </Link>
         </div>
       )}
 

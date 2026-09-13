@@ -129,17 +129,33 @@ export default function AdminSettings() {
 
             {/* Live Preview Box */}
             <div className="mt-3 bg-gray-50 p-3 rounded-2xl border border-gray-100">
-              <span className="block text-[10px] font-extrabold uppercase text-gray-400 mb-1.5 tracking-wider">Live Storefront Header Preview:</span>
-              <div className="bg-[#6B1518] text-white text-xs py-2 px-4 rounded-xl flex items-center justify-between shadow-xs">
-                <div className="flex items-center gap-2 truncate">
-                  <span className="bg-[#D3923A] text-[#6B1518] text-[9px] uppercase font-black px-1.5 py-0.5 rounded shrink-0">Announcement</span>
-                  <span className="truncate font-medium">
-                    {formData.announcementText || 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20'}
-                  </span>
+              <span className="block text-[10px] font-extrabold uppercase text-gray-400 mb-1.5 tracking-wider">
+                Live Storefront Header Preview (Continuous Marquee Scroll):
+              </span>
+              <div className="bg-[#6B1518] text-white text-xs py-2 px-3 rounded-xl overflow-hidden whitespace-nowrap shadow-xs relative">
+                <div className="flex items-center w-max animate-marquee">
+                  {[0, 1].map((i) => (
+                    <div key={i} className="flex items-center shrink-0">
+                      <span className="mx-4 inline-flex items-center gap-1.5 font-medium">
+                        <span className="bg-[#D3923A] text-[#6B1518] text-[9px] uppercase font-black px-1.5 py-0.5 rounded shrink-0">
+                          Announcement
+                        </span>
+                        <span>
+                          {formData.announcementText || 'Special Festive Offer: Flat 20% Off on Pure Silk Sarees | Use Code: AV20'}
+                        </span>
+                        <span className="text-[#D3923A] ml-3 text-xs">✦</span>
+                      </span>
+                      <span className="mx-4 inline-flex items-center gap-1.5 text-gray-200">
+                        <span>100% Authentic Handloom Silk &amp; Craft</span>
+                        <span className="text-[#D3923A] ml-3 text-xs">✦</span>
+                      </span>
+                      <span className="mx-4 inline-flex items-center gap-1.5 text-gray-200">
+                        <span>Free Express Delivery Across India</span>
+                        <span className="text-[#D3923A] ml-3 text-xs">✦</span>
+                      </span>
+                    </div>
+                  ))}
                 </div>
-                <span className="text-[10px] bg-white/20 hover:bg-white/30 text-white font-bold px-2 py-0.5 rounded ml-2 shrink-0 transition-colors">
-                  Shop Now →
-                </span>
               </div>
             </div>
           </div>
