@@ -12,7 +12,7 @@ export const BRAND = {
 
   phone: "6301646462",
   // wa.me requires country code, no + or spaces
-  whatsappNumber: "919999999999",
+  whatsappNumber: "916301646462",
   email: "aalayavastra2026@gmail.com",
   adminEmail: "aalayavastra2026@gmail.com",
 

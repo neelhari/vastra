@@ -23,14 +23,19 @@ export default function ResetPasswordPage() {
     // Check if authentic recovery session or token is active
     const checkSession = async () => {
       const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      const params = new URLSearchParams(search);
+      const code = params.get('code');
+
       const hasRecoveryToken =
         hash.includes('access_token') ||
         hash.includes('type=recovery') ||
         hash.includes('type=invite') ||
-        window.location.search.includes('type=recovery');
+        search.includes('type=recovery') ||
+        Boolean(code);
 
       if (!supabase) {
-        // In local mock mode, require hash or existing auth
+        // In local mock mode, require hash, query or existing auth
         if (hasRecoveryToken || user) {
           setHasValidRecoverySession(true);
         } else {
@@ -40,7 +45,25 @@ export default function ResetPasswordPage() {
         return;
       }
 
-      // Check real Supabase recovery session
+      // 1. If PKCE auth code is present, exchange it for a real session
+      if (code) {
+        try {
+          const { data: exchangeData, error: exchangeErr } = await supabase.auth.exchangeCodeForSession(code);
+          if (!exchangeErr && exchangeData?.session) {
+            setHasValidRecoverySession(true);
+            if (exchangeData.session.user) {
+              const admin = await isUserAdmin(exchangeData.session.user.id, exchangeData.session.user.email);
+              setIsUserAnAdmin(admin);
+            }
+            setSessionChecked(true);
+            return;
+          }
+        } catch (err) {
+          console.warn('PKCE code exchange notice:', err);
+        }
+      }
+
+      // 2. Check active Supabase recovery session
       const { data } = await supabase.auth.getSession();
       if (data?.session && (hasRecoveryToken || data.session.user)) {
         setHasValidRecoverySession(true);
@@ -51,7 +74,7 @@ export default function ResetPasswordPage() {
       } else if (hasRecoveryToken) {
         setHasValidRecoverySession(true);
       } else {
-        // STRICT SECURITY GATE: No recovery token or recovery session found!
+        // No recovery token or recovery session found
         setHasValidRecoverySession(false);
       }
       setSessionChecked(true);
@@ -62,7 +85,7 @@ export default function ResetPasswordPage() {
     // Listen for auth state change recovery event
     if (supabase) {
       const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY' || session) {
+        if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
           setHasValidRecoverySession(true);
           if (session?.user) {
             const admin = await isUserAdmin(session.user.id, session.user.email);

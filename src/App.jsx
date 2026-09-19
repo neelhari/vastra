@@ -73,12 +73,20 @@ function AppContent() {
   useEffect(() => {
     // If user clicked an email invite or recovery link, route directly to password setup
     const hash = window.location.hash || '';
+    const search = window.location.search || '';
+    const isRecovery =
+      hash.includes('type=recovery') ||
+      hash.includes('type=invite') ||
+      hash.includes('access_token') ||
+      search.includes('type=recovery') ||
+      search.includes('code=');
+
     if (
-      (hash.includes('type=recovery') || hash.includes('type=invite') || hash.includes('access_token')) &&
+      isRecovery &&
       !location.pathname.startsWith('/reset-password') &&
       !location.pathname.startsWith('/admin')
     ) {
-      navigate(`/reset-password${hash}`, { replace: true });
+      navigate(`/reset-password${search}${hash}`, { replace: true });
     }
   }, [location.pathname]);
 

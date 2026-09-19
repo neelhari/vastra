@@ -157,15 +157,6 @@ export async function sendPasswordResetEmailToSupabase(email) {
     return { success: false, message: 'Please enter a valid email address.' };
   }
 
-  // Security Verification: Only registered emails can receive a password reset link
-  const exists = await checkRegisteredEmailExists(clean);
-  if (!exists) {
-    return {
-      success: false,
-      message: 'No registered account found with this email address. Please check your email or Create an Account.',
-    };
-  }
-
   if (!supabase) {
     return { success: true, message: `Mock reset link sent to ${clean}` };
   }
